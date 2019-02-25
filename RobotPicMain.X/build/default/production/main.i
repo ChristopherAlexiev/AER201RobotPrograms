@@ -7,7 +7,7 @@
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\language_support.h" 1 3
 # 2 "<built-in>" 2
 # 1 "main.c" 2
-# 17 "main.c"
+# 10 "main.c"
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 1 3
 # 18 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 3
 extern const char __xc8_OPTIM_SPEED;
@@ -4380,7 +4380,571 @@ extern __attribute__((nonreentrant)) void _delaywdt(unsigned long);
 #pragma intrinsic(_delay3)
 extern __attribute__((nonreentrant)) void _delay3(unsigned char);
 # 32 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 2 3
-# 17 "main.c" 2
+# 10 "main.c" 2
+
+# 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 1 3
+# 10 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 3
+# 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdint.h" 1 3
+# 22 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdint.h" 3
+# 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 1 3
+# 135 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 3
+typedef unsigned long uintptr_t;
+# 150 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 3
+typedef long intptr_t;
+# 166 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 3
+typedef signed char int8_t;
+
+
+
+
+typedef short int16_t;
+# 181 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 3
+typedef long int32_t;
+
+
+
+
+
+typedef long long int64_t;
+# 196 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 3
+typedef long long intmax_t;
+
+
+
+
+
+typedef unsigned char uint8_t;
+
+
+
+
+typedef unsigned short uint16_t;
+# 217 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 3
+typedef unsigned long uint32_t;
+
+
+
+
+
+typedef unsigned long long uint64_t;
+# 237 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 3
+typedef unsigned long long uintmax_t;
+# 22 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdint.h" 2 3
+
+
+typedef int8_t int_fast8_t;
+
+typedef int64_t int_fast64_t;
+
+
+typedef int8_t int_least8_t;
+typedef int16_t int_least16_t;
+
+typedef int24_t int_least24_t;
+
+typedef int32_t int_least32_t;
+
+typedef int64_t int_least64_t;
+
+
+typedef uint8_t uint_fast8_t;
+
+typedef uint64_t uint_fast64_t;
+
+
+typedef uint8_t uint_least8_t;
+typedef uint16_t uint_least16_t;
+
+typedef uint24_t uint_least24_t;
+
+typedef uint32_t uint_least32_t;
+
+typedef uint64_t uint_least64_t;
+# 155 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdint.h" 3
+# 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/stdint.h" 1 3
+typedef int32_t int_fast16_t;
+typedef int32_t int_fast32_t;
+typedef uint32_t uint_fast16_t;
+typedef uint32_t uint_fast32_t;
+# 155 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdint.h" 2 3
+# 10 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 2 3
+
+
+
+
+
+# 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 1 3
+# 37 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\bits/alltypes.h" 3
+typedef float float_t;
+
+
+
+
+typedef double double_t;
+# 15 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 2 3
+# 46 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 3
+int __fpclassifyf(float);
+# 97 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 3
+int __signbitf(float);
+# 149 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 3
+double acos(double);
+float acosf(float);
+long double acosl(long double);
+
+
+
+
+
+double acosh(double);
+float acoshf(float);
+long double acoshl(long double);
+
+
+
+
+
+double asin(double);
+float asinf(float);
+long double asinl(long double);
+
+
+
+
+
+double asinh(double);
+float asinhf(float);
+long double asinhl(long double);
+
+
+
+
+
+double atan(double);
+float atanf(float);
+long double atanl(long double);
+
+
+
+
+
+double atan2(double, double);
+float atan2f(float, float);
+long double atan2l(long double, long double);
+
+
+
+
+
+double atanh(double);
+float atanhf(float);
+long double atanhl(long double);
+
+
+
+
+
+double cbrt(double);
+float cbrtf(float);
+long double cbrtl(long double);
+
+
+
+
+
+double ceil(double);
+float ceilf(float);
+long double ceill(long double);
+
+
+
+
+
+double copysign(double, double);
+float copysignf(float, float);
+long double copysignl(long double, long double);
+
+
+
+
+
+double cos(double);
+float cosf(float);
+long double cosl(long double);
+
+
+
+
+
+double cosh(double);
+float coshf(float);
+long double coshl(long double);
+
+
+
+
+
+double erf(double);
+float erff(float);
+long double erfl(long double);
+
+
+
+
+
+double erfc(double);
+float erfcf(float);
+long double erfcl(long double);
+
+
+
+
+
+double exp(double);
+float expf(float);
+long double expl(long double);
+
+
+
+
+
+double exp2(double);
+float exp2f(float);
+long double exp2l(long double);
+
+
+
+
+
+double expm1(double);
+float expm1f(float);
+long double expm1l(long double);
+
+
+
+
+
+double fabs(double);
+float fabsf(float);
+long double fabsl(long double);
+
+
+
+
+
+double fdim(double, double);
+float fdimf(float, float);
+long double fdiml(long double, long double);
+
+
+
+
+
+double floor(double);
+float floorf(float);
+long double floorl(long double);
+
+
+
+
+
+double fma(double, double, double);
+float fmaf(float, float, float);
+long double fmal(long double, long double, long double);
+
+
+
+
+
+double fmax(double, double);
+float fmaxf(float, float);
+long double fmaxl(long double, long double);
+
+
+
+
+
+double fmin(double, double);
+float fminf(float, float);
+long double fminl(long double, long double);
+
+
+
+
+
+double fmod(double, double);
+float fmodf(float, float);
+long double fmodl(long double, long double);
+
+
+
+
+
+double frexp(double, int *);
+float frexpf(float, int *);
+long double frexpl(long double, int *);
+
+
+
+
+
+double hypot(double, double);
+float hypotf(float, float);
+long double hypotl(long double, long double);
+
+
+
+
+
+int ilogb(double);
+int ilogbf(float);
+int ilogbl(long double);
+
+
+
+
+
+double ldexp(double, int);
+float ldexpf(float, int);
+long double ldexpl(long double, int);
+
+
+
+
+
+double lgamma(double);
+float lgammaf(float);
+long double lgammal(long double);
+
+
+
+
+
+long long llrint(double);
+long long llrintf(float);
+long long llrintl(long double);
+
+
+
+
+
+long long llround(double);
+long long llroundf(float);
+long long llroundl(long double);
+
+
+
+
+
+double log(double);
+float logf(float);
+long double logl(long double);
+
+
+
+
+
+double log10(double);
+float log10f(float);
+long double log10l(long double);
+
+
+
+
+
+double log1p(double);
+float log1pf(float);
+long double log1pl(long double);
+
+
+
+
+
+double log2(double);
+float log2f(float);
+long double log2l(long double);
+
+
+
+
+
+double logb(double);
+float logbf(float);
+long double logbl(long double);
+
+
+
+
+
+long lrint(double);
+long lrintf(float);
+long lrintl(long double);
+
+
+
+
+
+long lround(double);
+long lroundf(float);
+long lroundl(long double);
+
+
+
+
+
+double modf(double, double *);
+float modff(float, float *);
+long double modfl(long double, long double *);
+
+
+
+
+
+double nan(const char *);
+float nanf(const char *);
+long double nanl(const char *);
+
+
+
+
+
+double nearbyint(double);
+float nearbyintf(float);
+long double nearbyintl(long double);
+
+
+
+
+
+double nextafter(double, double);
+float nextafterf(float, float);
+long double nextafterl(long double, long double);
+
+
+
+
+
+double nexttoward(double, long double);
+float nexttowardf(float, long double);
+long double nexttowardl(long double, long double);
+# 498 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 3
+double pow(double, double);
+__attribute__((nonreentrant)) float powf(float, float);
+long double powl(long double, long double);
+
+
+
+
+
+double remainder(double, double);
+float remainderf(float, float);
+long double remainderl(long double, long double);
+
+
+
+
+
+double remquo(double, double, int *);
+float remquof(float, float, int *);
+long double remquol(long double, long double, int *);
+
+
+
+
+
+double rint(double);
+float rintf(float);
+long double rintl(long double);
+
+
+
+
+
+double round(double);
+float roundf(float);
+long double roundl(long double);
+
+
+
+
+
+double scalbln(double, long);
+float scalblnf(float, long);
+long double scalblnl(long double, long);
+
+
+
+
+
+double scalbn(double, int);
+float scalbnf(float, int);
+long double scalbnl(long double, int);
+
+
+
+
+
+double sin(double);
+float sinf(float);
+long double sinl(long double);
+
+
+
+
+
+double sinh(double);
+float sinhf(float);
+long double sinhl(long double);
+
+
+
+
+
+double sqrt(double);
+float sqrtf(float);
+long double sqrtl(long double);
+
+
+
+
+
+double tan(double);
+float tanf(float);
+long double tanl(long double);
+
+
+
+
+
+double tanh(double);
+float tanhf(float);
+long double tanhl(long double);
+
+
+
+
+
+double tgamma(double);
+float tgammaf(float);
+long double tgammal(long double);
+
+
+
+
+
+double trunc(double);
+float truncf(float);
+long double truncl(long double);
+# 631 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 3
+extern int signgam;
+
+double j0(double);
+double j1(double);
+double jn(int, double);
+
+double y0(double);
+double y1(double);
+double yn(int, double);
+# 11 "main.c" 2
 
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdio.h" 1 3
 # 24 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdio.h" 3
@@ -4518,10 +5082,10 @@ char *ctermid(char *);
 
 
 char *tempnam(const char *, const char *);
-# 18 "main.c" 2
+# 12 "main.c" 2
 
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdbool.h" 1 3
-# 19 "main.c" 2
+# 13 "main.c" 2
 
 
 # 1 "./configBits.h" 1
@@ -4579,7 +5143,7 @@ char *tempnam(const char *, const char *);
 
 
 #pragma config EBTRB = OFF
-# 21 "main.c" 2
+# 15 "main.c" 2
 
 # 1 "./lcd.h" 1
 # 68 "./lcd.h"
@@ -4625,7 +5189,7 @@ void lcd_shift_cursor(unsigned char numChars, lcd_direction_e direction);
 void lcd_shift_display(unsigned char numChars, lcd_direction_e direction);
 # 118 "./lcd.h"
 void putch(char data);
-# 22 "main.c" 2
+# 16 "main.c" 2
 
 # 1 "./I2C.h" 1
 # 38 "./I2C.h"
@@ -4653,8 +5217,7 @@ void I2C_Master_Stop(void);
 void I2C_Master_Write(unsigned byteToWrite);
 # 68 "./I2C.h"
 unsigned char I2C_Master_Read(unsigned char ackBit);
-# 23 "main.c" 2
-
+# 17 "main.c" 2
 
 
 
@@ -4669,6 +5232,10 @@ volatile int motorBDistance = 0;
 volatile int secondsMeasured = 0;
 volatile _Bool topBreakBeamTriggeredChange = 0;
 volatile _Bool bottomBreakBeamTriggeredChange = 0;
+volatile _Bool motorBDirection = 1;
+volatile _Bool motorADirection = 1;
+volatile _Bool encoderBInterruptLast;
+volatile _Bool encoderAInterruptLast;
 
 void doDisplayLog(int currentLogState){
     { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
@@ -4739,11 +5306,46 @@ void doDisplayLog(int currentLogState){
 
 
 
+void updateMotorBEncoder(){
+  int interruptPinState = PORTBbits.RB2;
+  if(encoderBInterruptLast == 0 && interruptPinState==1){
+    int val = PORTEbits.RE2;
+    if(val == 0 && motorBDirection){
+      motorBDirection = 0;
+    }
+    else if(val == 1 && !motorBDirection){
+      motorBDirection = 1;
+    }
+  }
+  encoderBInterruptLast = interruptPinState;
 
 
+  if(!motorBDirection){
+      motorBDistance++;
+  }else{
+      motorBDistance--;
+  }
+}
+
+void EncoderInit(){
+  motorBDirection = 1;
+  motorADirection = 1;
+
+
+  TRISEbits.TRISE2 = 1;
+  TRISEbits.TRISE1 = 1;
+  TRISBbits.TRISB2 = 1;
+  TRISBbits.TRISB0 = 1;
+
+
+  INT2IE = 1;
+}
+# 147 "main.c"
 void CLK_INIT( void ){
     OSCCONbits.IRCF = 0b100;
 }
+
+
 void TIMER_INIT( void ){
     T0CONbits.TMR0ON = 0;
     T0CONbits.T08BIT = 0;
@@ -4784,7 +5386,124 @@ void initSecondTimer(){
 void stopTimer(){
     TMR0IE = 0;
 }
-# 190 "main.c"
+
+
+
+
+
+
+void init_motor_PWM(){
+
+
+
+
+
+
+
+    TRISCbits.TRISC2 = 1;
+    TRISCbits.TRISC1 = 1;
+
+
+    const unsigned long FREQUENCY = 1000;
+    const unsigned char TIMER2_PRESCALER = 16;
+    PR2 = (10000000 / (FREQUENCY * 4 * TIMER2_PRESCALER)) - 1;
+
+
+    P1M1 = 0;
+    P1M0 = 0;
+    CCP1M3 = 1;
+    CCP1M2 = 1;
+    CCP1M1 = 0;
+    CCP1M0 = 0;
+
+    CCP2M3 = 1;
+    CCP2M2 = 1;
+    CCP2M1 = 0;
+    CCP2M0 = 0;
+
+
+    T2CKPS0 = 1;
+    T2CKPS1 = 1;
+
+
+    TMR2ON = 1;
+
+
+    TRISCbits.TRISC2 = 0;
+    TRISCbits.TRISC1 = 0;
+
+    return;
+}
+
+void set_pwm_duty_cycle(float dutyA, float dutyB){
+    if((dutyA >= 0) && (dutyA <= 100.0) && (dutyB >= 0) && (dutyB <= 100.0)){
+
+
+
+
+        unsigned short max_duty_val = PR2 + 1;
+
+
+
+
+
+        unsigned short duty_valA = (unsigned short)((dutyA *4 / 100.0) * (float)max_duty_val);
+        unsigned short duty_valB = (unsigned short)((dutyB *4/ 100.0) * (float)max_duty_val);
+
+
+
+        CCP1X = duty_valA & 2;
+        CCP1Y = duty_valA & 1;
+        CCPR1L = duty_valA >> 2;
+
+
+
+        CCP2X = duty_valB & 2;
+        CCP2Y = duty_valB & 1;
+        CCPR2L = duty_valB >> 2;
+
+    }
+}
+
+void setMotorSpeeds(int motorASpeed, _Bool Aforward, int motorBSpeed){
+    if (Aforward){
+        LATAbits.LATA0 = 0;
+        LATAbits.LATA1 = 1;
+    } else {
+        LATAbits.LATA0 = 1;
+        LATAbits.LATA1 = 0;
+    }
+
+    set_pwm_duty_cycle((float) motorASpeed, (float) motorBSpeed);
+    return;
+}
+# 293 "main.c"
+void sendArduinoTireDropRequest(){
+
+
+
+
+    unsigned char data = '1';
+
+    I2C_Master_Start();
+    I2C_Master_Write(0b00010000);
+    I2C_Master_Write(data);
+    I2C_Master_Stop();
+# 349 "main.c"
+    return;
+}
+
+_Bool requestIsTireDropDone(){
+    I2C_Master_Start();
+    I2C_Master_Write(0b00010001);
+    unsigned char data = I2C_Master_Read(1);
+    I2C_Master_Stop();
+    if(data == '1'){
+        return 1;
+    }
+    return 0;
+}
+# 375 "main.c"
 void doOperation(){
 
 
@@ -4802,8 +5521,8 @@ void doOperation(){
     secondsMeasured = 0;
 
  int goalSpeed = 20;
- int motorASpeed = 0;
- int motorBSpeed = 0;
+ int motorASpeed = 100;
+ int motorBSpeed = 100;
  int errorScaleFactor = 1;
  int error = 0;
  int currentAngle = 0;
@@ -4814,8 +5533,25 @@ void doOperation(){
  int tiresToDrop = 0;
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
+    int timeInOperation = 20;
+    _Bool topLaserState;
+    _Bool topLaserStatePrev;
+    _Bool isDoneDrop;
+    init_motor_PWM();
+
+
+    TRISAbits.TRISA0 = 0;
+    TRISAbits.TRISA1 = 0;
+
+    TRISAbits.TRISA4 = 0;
+
 
     LATAbits.LATA4 = 1;
+
+    topLaserState = PORTBbits.RB4;
+    topLaserStatePrev = topLaserState;
+
+
 
 
 
@@ -4823,21 +5559,100 @@ void doOperation(){
     _Bool send = 1;
     int secondsMeasuredOld = 0;
 
-    while (secondsMeasured < 10){
-  if (secondsMeasured > secondsMeasuredOld){
-            { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
-            printf("%d", secondsMeasured);
+
+
+    while (1){
+        topLaserStatePrev = topLaserState;
+        topLaserState = PORTBbits.RB4;
+   if (secondsMeasured > secondsMeasuredOld){
             secondsMeasuredOld++;
         }
-# 316 "main.c"
+
+
+        switch (currentOperationState){
+            case moveForward:
+                { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+                printf("%d", secondsMeasured);
+                { lcdInst(0x80 | LCD_LINE3_ADDR);};
+                printf("%d", topLaserState);
+                { lcdInst(0x80 | LCD_LINE2_ADDR);};
+                printf("%d", motorBDistance);
+
+
+
+    setMotorSpeeds(motorASpeed, 1, motorBSpeed);
+                break;
+            case poleFinding:
+# 464 "main.c"
+                sendArduinoTireDropRequest();
+                tiresToDrop = 1;
+                currentOperationState = tireDrop;
+                { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+                printf("TIRE DROP");
+                setMotorSpeeds(0, 1, 0);
+    break;
+   case tireDrop:
+
+
+    isDoneDrop = requestIsTireDropDone();
+
+    if (isDoneDrop){
+     tiresToDrop -- ;
+     if (tiresToDrop == 0){
+      currentOperationState = moveForward;
+     } else {
+
+      sendArduinoTireDropRequest();
+     }
+    }
+
+    break;
+   case courseAdjustment:
+
+                currentOperationState = moveForward;
+    break;
+   case returnHome:
+
+    currentOperationState = complete;
+    break;
+   case complete:
+    setMotorSpeeds(0, 1, 0);
+                LATAbits.LATA4 = 0;
+    return;
+        }
+# 515 "main.c"
+  if (secondsMeasured >= timeInOperation){
+   currentOperationState = complete;
+
+  }
+  switch (currentOperationState){
+            case moveForward:
+
+
+
+
+
+                if (topLaserStatePrev != topLaserState){
+                    currentOperationState = poleFinding;
+                }
+    break;
+            case poleFinding:
+    break;
+   case tireDrop:
+    break;
+   case courseAdjustment:
+    break;
+   case returnHome:
+    break;
+   case complete:
+    break;
+        }
+
+
     }
 
 
 
-    unsigned char mem[3];
-    unsigned char counter = 0;
-    unsigned char data;
-# 366 "main.c"
     return;
 }
 
@@ -4873,6 +5688,9 @@ void rtc_set_time(void){
 
 void robotInit(void){
 
+    EncoderInit();
+
+
 
 
     LATD = 0x00;
@@ -4880,7 +5698,15 @@ void robotInit(void){
 
 
     LATB = 0x00;
-    TRISB = 0b11110010;
+    TRISBbits.TRISB1 = 1;
+    TRISBbits.TRISB4 = 1;
+    TRISBbits.TRISB5 = 1;
+    TRISBbits.TRISB6 = 1;
+    TRISBbits.TRISB7 = 1;
+
+
+    TRISAbits.TRISA4 = 0;
+    LATAbits.LATA4 = 0;
 
 
     I2C_Master_Init(100000);
@@ -4968,8 +5794,10 @@ void main(void) {
                 doOperation();
                 { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
                 currentRobotState = operationComplete;
+
                 break;
             case operationComplete:
+
 
                 { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
                 printf("%s", "OP. COMPLETE");
@@ -5049,12 +5877,12 @@ void main(void) {
 
 
         }
-# 585 "main.c"
+# 779 "main.c"
         tick++;
         _delay((unsigned long)((1)*(10000000/4000.0)));
     }
 }
-# 598 "main.c"
+# 792 "main.c"
 void __attribute__((picinterrupt(("")))) interruptHandler(void){
 
     if(INT1IF){
@@ -5067,5 +5895,12 @@ void __attribute__((picinterrupt(("")))) interruptHandler(void){
     TMR0H = (65536ul - (((10000000 / (4ul))/(64ul))/2ul)) >> 8;
     TMR0L = (65536ul - (((10000000 / (4ul))/(64ul))/2ul));
     secondsMeasured++;
+   } else if (INT2IF){
+       INT2IF = 0;
+       updateMotorBEncoder();
    }
+
+
+
+
 }
