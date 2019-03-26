@@ -5095,7 +5095,7 @@ char *tempnam(const char *, const char *);
 #pragma config IESO = OFF
 
 
-#pragma config PWRT = OFF
+#pragma config PWRT = ON
 #pragma config BOREN = SBORDIS
 #pragma config BORV = 3
 
@@ -5221,7 +5221,10 @@ unsigned char I2C_Master_Read(unsigned char ackBit);
 
 
 
-int logs[5][33];
+int logs[5][48];
+
+
+
 
 const char keys[] = "123A456B789C*0#D";
 
@@ -5403,7 +5406,7 @@ void EncoderInit(){
 
   INT0IE = 1;
 }
-# 210 "main.c"
+# 213 "main.c"
 void CLK_INIT( void ){
     OSCCONbits.IRCF = 0b100;
 }
@@ -5445,6 +5448,7 @@ void initSecondTimer(){
 
     return;
 }
+
 
 void stopTimer(){
     TMR0IE = 0;
@@ -5571,10 +5575,10 @@ int tirePositioning(int maxOperationTime){
             startDistanceBottom = motorADistance;
         }
         if(!topBreakbeam){
-            distanceRecordedTop = motorADistance - startDistanceTop;
+            distanceRecordedTop = abs(motorADistance - startDistanceTop);
         }
         if(!bottomBreakbeam){
-            distanceRecordedBottom = motorADistance - startDistanceBottom;
+            distanceRecordedBottom = abs(motorADistance - startDistanceBottom);
         }
         if(topBreakbeam && bottomBreakbeam){
             break;
@@ -5628,7 +5632,21 @@ void sendArduinoTireDropRequest(){
     I2C_Master_Write(0b00010000);
     I2C_Master_Write(data);
     I2C_Master_Stop();
-# 479 "main.c"
+# 483 "main.c"
+    return;
+}
+
+void sendArduinoTireOperationStartMessage(){
+
+
+
+
+    unsigned char data = '2';
+
+    I2C_Master_Start();
+    I2C_Master_Write(0b00010000);
+    I2C_Master_Write(data);
+    I2C_Master_Stop();
     return;
 }
 
@@ -5642,7 +5660,7 @@ _Bool requestIsTireDropDone(){
     }
     return 0;
 }
-# 509 "main.c"
+# 527 "main.c"
 void PIDCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, int motorBStartDistance, float kp, float kd, float ki, int * derivativeData){
     int error = (int)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/turnRatio);
     int derivative = error - derivativeData[0];
@@ -5696,6 +5714,23 @@ void errorCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance,
 }
 
 
+
+
+
+
+void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, int distanceDegrees, int maxOperationTime){
+    int motorAStartDistance = motorADistance;
+    int motorBStartDistance = motorBDistance;
+
+
+
+    while (millisecondsMeasured < maxOperationTime && abs(motorADistance - motorAStartDistance) < distanceDegrees){
+        errorCorrectedMove(goalSpeed, turnRatio, motorAStartDistance, motorBStartDistance, correctionConstant);
+    }
+    return;
+}
+
+
 void doOperation(){
 
 
@@ -5706,6 +5741,7 @@ void doOperation(){
     I2C_Master_Write(0b00010000);
     I2C_Master_Stop();
 
+    sendArduinoTireOperationStartMessage();
 
 
 
@@ -5718,7 +5754,7 @@ void doOperation(){
  int errorScaleFactor = 1;
  int error = 0;
  int currentAngle = 0;
- enum operationStates {moveForward, poleFinding, tireDrop, courseAdjustment, returnHome, complete};
+ enum operationStates {moveForward, poleFinding, tireDrop, courseAdjustment, returnHome, complete, leavePole};
  enum operationStates currentOperationState = moveForward;
  int leftRangeFinder = 0;
  int rightRangeFinder = 0;
@@ -5728,7 +5764,7 @@ void doOperation(){
     int timeInOperation = 15000;
     int motorAStartDistance = motorADistance;
     int motorBStartDistance = motorBDistance;
-    int tiresOnPole;
+
     int PIDData[2] = {0,0};
     _Bool topLaserState;
     _Bool topLaserStatePrev;
@@ -5739,6 +5775,18 @@ void doOperation(){
     int counted = 0;
     int badCount = 0;
     int badCountBot = 0;
+
+
+    int poleNumber = 0;
+    int tiresDeployedOnPole = 0;
+    int tiresOnPoleAfterOp = 0;
+    int tiresOnPole = 0;
+
+    int totalTiresSupplied = 0;
+
+    int distanceToPole = 0;
+    int distanceFromLastPole = 0;
+
 
 
 
@@ -5796,11 +5844,16 @@ void doOperation(){
                 { lcdInst(0x80 | LCD_LINE4_ADDR);};
                 printf("A: %d", motorADistance);
                 }
-# 679 "main.c"
+# 727 "main.c"
                 errorCorrectedMove(30, 1, motorAStartDistance, motorBStartDistance, 0.1);
 
                 break;
             case poleFinding:
+
+                distanceFromLastPole = motorADistance - distanceToPole;
+                distanceToPole = motorADistance;
+
+                poleNumber++;
 
 
                 tiresOnPole = tirePositioning(timeInOperation);
@@ -5810,24 +5863,15 @@ void doOperation(){
                 printf("%d on pole", tiresOnPole);
 
                 setMotorSpeeds(0, 1, 1, 0);
-                while(millisecondsMeasured < timeInOperation){
-
-                }
-
-
-
-
-
-
+# 753 "main.c"
     sendArduinoTireDropRequest();
 
 
-                sendArduinoTireDropRequest();
                 tiresToDrop = 1;
                 currentOperationState = tireDrop;
-                { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
-                printf("TIRE DROP");
-                setMotorSpeeds(0, 1, 1, 0);
+
+
+
     break;
    case tireDrop:
 
@@ -5835,33 +5879,51 @@ void doOperation(){
 
     if (isDoneDrop){
      tiresToDrop -- ;
+                    tiresDeployedOnPole++;
      if (tiresToDrop == 0){
-      currentOperationState = moveForward;
+      currentOperationState = leavePole;
+
+                        tiresOnPole = 0;
+                        totalTiresSupplied += tiresDeployedOnPole;
+                        tiresDeployedOnPole = 0;
+                        tiresDeployedOnPole = 0;
      } else {
 
       sendArduinoTireDropRequest();
      }
     }
 
+
+
     break;
    case courseAdjustment:
 
                 currentOperationState = moveForward;
     break;
+            case leavePole:
+
+                opErrorCorrectionDegrees(30, 1, 1, 400, timeInOperation);
+
+                motorAStartDistance = 0;
+                motorBStartDistance = 0;
+                currentOperationState = moveForward;
+
+
+                break;
    case returnHome:
 
     currentOperationState = complete;
     break;
    case complete:
 
-                for (int i = 0; i < 33; i++){
+                for (int i = 0; i < 48; i++){
                     logs[0][i] = 3;
                 }
     setMotorSpeeds(0, 1, 1, 0);
                 LATAbits.LATA4 = 0;
     return;
         }
-# 758 "main.c"
+# 827 "main.c"
   if (millisecondsMeasured >= timeInOperation){
    currentOperationState = complete;
 
@@ -5889,6 +5951,8 @@ void doOperation(){
     break;
    case courseAdjustment:
     break;
+            case leavePole:
+                break;
    case returnHome:
     break;
    case complete:
@@ -5937,7 +6001,7 @@ void ee_read_byte(unsigned char address, unsigned char *_data){
     EECON1bits.RD = 1;
     *_data = EEDATA;
 }
-# 854 "main.c"
+# 925 "main.c"
 const char happynewyear[7] = {
     00,
     55,
@@ -6010,7 +6074,7 @@ void robotInit(void){
 }
 
 void replaceOldLog(){
-    for (int i = 0; i< 33; i++){
+    for (int i = 0; i< 48; i++){
         logs[4][i] = logs[0][i];
     }
     return;
@@ -6164,12 +6228,12 @@ void main() {
 
 
         }
-# 1088 "main.c"
+# 1159 "main.c"
         tick++;
         _delay((unsigned long)((1)*(10000000/4000.0)));
     }
 }
-# 1101 "main.c"
+# 1172 "main.c"
 void __attribute__((picinterrupt(("")))) interruptHandler(void){
 
     if(INT1IF){

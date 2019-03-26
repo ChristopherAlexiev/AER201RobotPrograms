@@ -26,8 +26,8 @@ const int stepperPinThree = 8;
 const int stepperPinFour = 13;
 const int trigPin = 3;
 const int echoPin = 12;
-const int snapActionPin = A5;
-const int electricBumpPin = A4;
+const int snapActionPin = A3;
+const int electricBumpPin = A2;
 const int cranePusherServoPin = 9;
 const int linearServoPin = 6;
 const int rotatorOnePin = 10;
@@ -65,6 +65,7 @@ volatile bool doTireDrop;
 volatile int snapSwitchTriggered = 0;
 volatile int finishedYet = false;
 volatile int tireDropRequested = false;
+volatile int operationStarted = false;
 
 //////INIT AND SETUP FUNCTIONS////////////////
 ///////////////////////////////////
@@ -168,12 +169,33 @@ void lowerFlapperTwo(){//time in ms
   return;
   */
 }
-//lower flapper two. this is a blocking function
+//raise flapper two. this is a blocking function
 void raiseFlapperTwo(){//time in ms
     for (int pos = rotatorDownValueTwo; pos < rotatorUpValueTwo; pos += 2) { // goes from 0 degrees to 180 degrees
       // in steps of 1 degree
       rotatorTwo.write(pos);              // tell servo to go to position in variable 'pos'
       delay(15);                       // waits 15ms for the servo to reach the position
+    }
+    return;
+}
+
+
+//lower flapper one this is a blocking function
+void lowerFlapperOne(){//time in ms
+    for (int pos = rotatorUpValueOne; pos < rotatorDownValueOne; pos += 1) { // goes from 0 degrees to 180 degrees
+      // in steps of 1 degree
+      rotatorOne.write(pos);              // tell servo to go to position in variable 'pos'
+      delay(20);                       // waits 15ms for the servo to reach the position
+    }
+    return;
+ 
+}
+//raise flapper one this is a blocking function
+void raiseFlapperOne(){//time in ms
+    for (int pos = rotatorDownValueOne; pos > rotatorUpValueOne; pos -= 2) { // goes from 0 degrees to 180 degrees
+      // in steps of 1 degree
+      rotatorOne.write(pos);              // tell servo to go to position in variable 'pos'
+      delay(20);                       // waits 15ms for the servo to reach the position
     }
     return;
 }
@@ -187,22 +209,137 @@ void raiseFlapperTwo(){//time in ms
 int flapperCase = 3;//the first flapper to visit
 int clampLoc = 2;
 unsigned long startTime = 0;
+unsigned long startTimeTwo = 0;
 
 void loop(){
-  /*//old code used for testing
-  initMovingAvg();
-  long distanceOne;*/
+
+  while(!operationStarted){
+    rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
+    rotatorOne.write(rotatorUpValueOne);
+    cranePusherServo.write(craneStopSpeed);//keep crane still
+
+    cranePusherServo.write(95);
+    //initMovingAvg();
+    while (digitalRead(snapActionPin) == HIGH && !operationStarted){
+    }  
+    delay(50);
+    
+    cranePusherServo.write(0);
+    while (digitalRead(snapActionPin) == LOW && !operationStarted){
+    }
+    delay(50);
+    
+    cranePusherServo.write(95);
+    //initMovingAvg();
+    while (digitalRead(snapActionPin) == HIGH && !operationStarted){
+
+    } 
+    delay(50); 
+    cranePusherServo.write(180);
+    while (digitalRead(snapActionPin) == LOW && !operationStarted){
+
+    }       
+    delay(50); 
+    
+  }
+  
+  
+  if (flapperCase == 3 || flapperCase == 4){//the following cases are for if the tire is to be picked up from the 
+    
+    //START OF TIRE DROP PROCEDURE///////////////////////
+ 
+  //init the servo motors
+    rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
+    rotatorOne.write(rotatorUpValueOne);
+    cranePusherServo.write(craneStopSpeed);//keep crane still
+  //wait for snap button
+    /*while (digitalRead(snapActionPin) == HIGH){//wait for the snap action pin before crane moves
+
+    }  
+    delay(50);*/
+
+    
+    linearServo.write(0);//open clamp
+    startTime = millis();
+   
+    
+    
+    
+    //go to electric bump and stop then wait until enough time has passed to open clamp then lower tire
+    cranePusherServo.write(180);//move to electric bump
+    
+    while (digitalRead(electricBumpPin) == LOW){
+      if (millis()-startTime > 14000){
+        linearServo.write(linearStopSpeed);
+      }
+    }
+    if (flapperCase == 4){
+      startTimeTwo = millis();
+      while (millis()-startTimeTwo < 1000){
+        
+      }
+      while (digitalRead(electricBumpPin) == LOW){
+      if (millis()-startTime > 14000){
+        linearServo.write(linearStopSpeed);
+      }
+    }
+    }
+    cranePusherServo.write(craneStopSpeed);
+
+    while(millis()-startTime <= 14000){
+    //wait for the time taken by the clamp to open  
+    }
+    linearServo.write(linearStopSpeed);
+    
+    lowerFlapperTwo(); //lower the flapper
+
+    
+    linearServo.write(180);//close the clamp
+    delay(14000);
+
+    //move in the other direction away from the flapper all the way to the outermost point
+    cranePusherServo.write(0);//move clamp right until ebump farthest ebump pin
+    delay(1000); //pass over the current bump pin
+    while (digitalRead(electricBumpPin) == LOW){
+    }
+    
+    delay(1000);//pass over the non-outermost ebump
+    if (flapperCase ==4){
+          while (digitalRead(electricBumpPin) == LOW){
+          }
+    
+          delay(1000);//pass over the non-outermost ebump
+
+    }
+
+    cranePusherServo.write(0);  
+    while (digitalRead(electricBumpPin) == LOW){
+    }
+    cranePusherServo.write(craneStopSpeed);//stop the clamp at the outermost ebump pin
+     rotatorTwo.write(rotatorUpValueTwo);//non-blocking raising of the rotatorTwo
+  //wait for the tire drop request////////
   while (!tireDropRequested){//wait for pic to send i2c tire drop request
-      /*
-      changeUltrasonicMovingAvg();
-      Serial.print("Distance: ");
-      //distanceOne = ultrasonicDistance();
-      //Serial.println(distanceOne);
-      Serial.println(movingAvg);*/
-      break;
+
   }
   tireDropRequested = false;//clear tire drop request
-  if (flapperCase == 3 || flapperCase == 4){//the following cases are for if the tire is to be picked up from the 
+    
+    //move the servo until the ultrasonic sensor sees the pole
+    cranePusherServo.write(130);
+    delay(2000);//pass over the non-outermost ebump and away from wall
+    
+    initMovingAvg();
+    while (movingAvg>16){//move until the ultrasonic sensor sees the pole
+      changeUltrasonicMovingAvg();
+      Serial.println(movingAvg);
+    }
+    cranePusherServo.write(craneStopSpeed);
+
+    //drop tire by opening clamp
+    linearServo.write(0);
+    delay(5000);
+    
+    
+  } else {//if flapper is 1 or 2
     
     //START OF TIRE DROP PROCEDURE///////////////////////
  
@@ -220,77 +357,82 @@ void loop(){
     
     linearServo.write(0);//open clamp
     startTime = millis();
-    
-    /*linearServo.write(linearStopSpeed);
-    delay(5000);
-    linearServo.write(180);
-    delay(17000);
-    linearServo.write(linearStopSpeed);*/
-    
-    /*linearServo.write(180);
-    delay(10000);
-    linearServo.write(linearStopSpeed);
-    delay(5000);
-    linearServo.write(0);//open clamp
-    delay(5000);    
-    linearServo.write(180);//open clamp
-    delay(5000);*/
+   
     
     
     
     //go to electric bump and stop then wait until enough time has passed to open clamp then lower tire
-    cranePusherServo.write(180);//move to electric bump
+    cranePusherServo.write(0);//move to electric bump
     
     while (digitalRead(electricBumpPin) == LOW){
-      if (millis()-startTime > 17000){
+      if (millis()-startTime > 14000){
         linearServo.write(linearStopSpeed);
       }
     }
+    if (flapperCase == 1){
+      startTimeTwo = millis();
+      while (millis()-startTimeTwo < 1000){
+        
+      }
+      while (digitalRead(electricBumpPin) == LOW){
+      if (millis()-startTime > 14000){
+        linearServo.write(linearStopSpeed);
+      }
+    }
+    }
     cranePusherServo.write(craneStopSpeed);
 
-    whil0e(millis()-startTime <= 17000){
+    while(millis()-startTime <= 14000){
     //wait for the time taken by the clamp to open  
     }
     linearServo.write(linearStopSpeed);
     
-    lowerFlapperTwo(); //lower the flapper
+    lowerFlapperOne(); //lower the flapper
 
     
     linearServo.write(180);//close the clamp
-    delay(16000);
+    delay(14000);
 
     //move in the other direction away from the flapper all the way to the outermost point
-    cranePusherServo.write(0);//move clamp right until ebump farthest ebump pin
+    cranePusherServo.write(180);//move clamp until ebump farthest ebump pin
     delay(1000); //pass over the current bump pin
     while (digitalRead(electricBumpPin) == LOW){
     }
     
     delay(1000);//pass over the non-outermost ebump
+    if (flapperCase ==1){
+          while (digitalRead(electricBumpPin) == LOW){
+          }
+    
+          delay(1000);//pass over the non-outermost ebump
 
-    cranePusherServo.write(0);  
+    }
+
+    cranePusherServo.write(180);  
     while (digitalRead(electricBumpPin) == LOW){
     }
-    cranePusherServo.write(90);//stop the clamp at the outermost ebump pin
+    cranePusherServo.write(craneStopSpeed);//stop the clamp at the outermost ebump pin
      rotatorTwo.write(rotatorUpValueTwo);//non-blocking raising of the rotatorTwo
+    
     //move the servo until the ultrasonic sensor sees the pole
-    cranePusherServo.write(130);
-    delay(2000);//pass over the non-outermost ebump and away from wall
+    cranePusherServo.write(60);
+    //delay(2000);//pass over the non-outermost ebump and away from wall
     
     initMovingAvg();
-    while (movingAvg>15){//move until the ultrasonic sensor sees the pole
+    while (movingAvg>16){//move until the ultrasonic sensor sees the pole
       changeUltrasonicMovingAvg();
       Serial.println(movingAvg);
     }
-    cranePusherServo.write(90);
+    cranePusherServo.write(craneStopSpeed);
 
     //drop tire by opening clamp
-    linearServo.write(180);
-    
-    
-  } else {//if flapper is 1 or 4
-    
+    linearServo.write(0);
+    delay(5000);
+        
   }
-  delay(10000);
+  linearServo.write(180);
+  delay(1000);
+  finishedYet = true;
 }
 
 ////////////////////I2C INTERRUPT FUNCTIONS/////////////
@@ -306,6 +448,8 @@ void receiveEvent(void){
     if (x == '1'){
        tireDropRequested = true;
        finishedYet = false;
+    } else if (x == '2'){//this is to signify the start of an operation
+      operationStarted = true;
     }
     /*
     buf[counter++] = x;

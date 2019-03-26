@@ -16,7 +16,7 @@
 #pragma config IESO = OFF       // Internal/External Oscillator Switchover bit (Oscillator Switchover mode disabled)
 
 // CONFIG2L
-#pragma config PWRT = OFF       // Power-up Timer Enable bit (PWRT disabled)
+#pragma config PWRT = ON      // Power-up Timer Enable bit (PWRT disabled)
 #pragma config BOREN = SBORDIS  // Brown-out Reset Enable bits (Brown-out Reset enabled in hardware only (SBOREN is disabled))
 #pragma config BORV = 3         // Brown Out Reset Voltage bits (Minimum setting)
 

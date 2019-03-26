@@ -4532,7 +4532,7 @@ char *tempnam(const char *, const char *);
 #pragma config IESO = OFF
 
 
-#pragma config PWRT = OFF
+#pragma config PWRT = ON
 #pragma config BOREN = SBORDIS
 #pragma config BORV = 3
 

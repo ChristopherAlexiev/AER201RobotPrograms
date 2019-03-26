@@ -483,6 +483,20 @@ void sendArduinoTireDropRequest(){
     return;
 }
 
+void sendArduinoTireOperationStartMessage(){
+    //unsigned char mem[3]; // Initialize array to check for triple-A sequence
+    //unsigned char counter = 0; // Increments each time a byte is sent
+    //unsigned char data; // Holds the data to be sent/received
+    
+    unsigned char data = '2'; //char 1 is to represent a tire drop request
+    
+    I2C_Master_Start(); // Start condition
+    I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
+    I2C_Master_Write(data); // Write key press data
+    I2C_Master_Stop();
+    return;
+}
+
 bool requestIsTireDropDone(){//send request to arduino to see if the tire drop is complete
     I2C_Master_Start();
     I2C_Master_Write(0b00010001); // 7-bit Arduino slave address + Read
@@ -590,6 +604,7 @@ void doOperation(){
     I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
     I2C_Master_Stop();
 
+    sendArduinoTireOperationStartMessage();//send a character to the arduino to signify the start of the operation
     //set timer for 3 minutes
     //initSecondTimer();//start the timer so millisecondsMeasured start to get updated
     //  CLK_INIT();
@@ -727,9 +742,9 @@ void doOperation(){
                 printf("%d on pole", tiresOnPole);
                 ////TEST CODE
                 setMotorSpeeds(0, true, true, 0);
-                while(millisecondsMeasured < timeInOperation){
+                /*while(millisecondsMeasured < timeInOperation){
                     
-                }
+                }*/
                 ////END OF TEST CODE
                 
 
@@ -740,9 +755,9 @@ void doOperation(){
 
                 tiresToDrop = 1;//hard-coded for now
                 currentOperationState = tireDrop;
-                lcd_clear();//prepare screen for next state        
-                printf("TIRE DROP");
-                setMotorSpeeds(0, true, true, 0);
+                //lcd_clear();//prepare screen for next state        
+                //printf("TIRE DROP");
+                //setMotorSpeeds(0, true, true, 0);
 				break;
 			case tireDrop:
                 //send command to arduino via i2c asking if the tire-drop is complete;
