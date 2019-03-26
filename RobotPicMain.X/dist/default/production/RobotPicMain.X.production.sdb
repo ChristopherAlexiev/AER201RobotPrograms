@@ -3,13 +3,13 @@
 [d edition pro ]
 [d chip 18F4620 ]
 [d frameptr 4065 ]
-"44 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
-[e E3248 displayStates `uc
+"48 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+[e E3250 displayStates `uc
 opTime 0
 pole 1
 ]
-"398
-[e E3286 operationStates `uc
+"585
+[e E3343 operationStates `uc
 moveForward 0
 poleFinding 1
 tireDrop 2
@@ -17,16 +17,16 @@ courseAdjustment 3
 returnHome 4
 complete 5
 ]
-"634
-[e E3312 robotStates `uc
+"943
+[e E3391 robotStates `uc
 standby 0
 operation 1
 operationComplete 2
 selectLog 3
 displayLog 4
 ]
-"636
-[e E3319 logStates `uc
+"945
+[e E3398 logStates `uc
 justRan 0
 one 1
 two 2
@@ -48,8 +48,14 @@ LCD_SHIFT_RIGHT 1
 [v ___aomod __aomod `(o  1 e 8 0 ]
 "4 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\atoi.c
 [v _atoi atoi `(i  1 e 2 0 ]
+"7 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\awdiv.c
+[v ___awdiv __awdiv `(i  1 e 2 0 ]
+"7 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\awmod.c
+[v ___awmod __awmod `(i  1 e 2 0 ]
 "72 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\doprnt.c
 [v _pad pad `(i  1 s 2 pad ]
+"259
+[v _ctoa ctoa `(i  1 s 2 ctoa ]
 "274
 [v _dtoa dtoa `(i  1 s 2 dtoa ]
 "546
@@ -138,33 +144,45 @@ LCD_SHIFT_RIGHT 1
 [v _initLCD initLCD `(v  1 e 1 0 ]
 "102
 [v _putch putch `(v  1 e 1 0 ]
-"36 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"40 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _doDisplayLog doDisplayLog `(v  1 e 1 0 ]
-"105
+"117
+[v _opDelay opDelay `(v  1 e 1 0 ]
+"146
 [v _updateMotorBEncoder updateMotorBEncoder `(v  1 e 1 0 ]
-"126
+"177
+[v _updateMotorAEncoder updateMotorAEncoder `(v  1 e 1 0 ]
+"187
 [v _EncoderInit EncoderInit `(v  1 e 1 0 ]
-"152
+"215
 [v _TIMER_INIT TIMER_INIT `(v  1 e 1 0 ]
-"198
+"261
 [v _init_motor_PWM init_motor_PWM `(v  1 e 1 0 ]
-"241
+"304
 [v _set_pwm_duty_cycle set_pwm_duty_cycle `(v  1 e 1 0 ]
-"271
+"334
 [v _setMotorSpeeds setMotorSpeeds `(v  1 e 1 0 ]
-"293
+"356
+[v _tirePositioning tirePositioning `(i  1 e 2 0 ]
+"423
 [v _sendArduinoTireDropRequest sendArduinoTireDropRequest `(v  1 e 1 0 ]
-"352
+"482
 [v _requestIsTireDropDone requestIsTireDropDone `(a  1 e 1 0 ]
-"375
+"539
+[v _errorCorrectedMove errorCorrectedMove `(v  1 e 1 0 ]
+"562
 [v _doOperation doOperation `(v  1 e 1 0 ]
-"551
-[v _replaceOldLog replaceOldLog `(v  1 e 1 0 ]
-"580
+"807
+[v _ee_write_byte ee_write_byte `(v  1 e 1 0 ]
+"826
+[v _ee_read_byte ee_read_byte `(v  1 e 1 0 ]
+"879
 [v _robotInit robotInit `(v  1 e 1 0 ]
-"627
+"925
+[v _replaceOldLog replaceOldLog `(v  1 e 1 0 ]
+"932
 [v _main main `(v  1 e 1 0 ]
-"792
+"1101
 [v _interruptHandler interruptHandler `IIH(v  1 e 1 0 ]
 "189 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\include\pic18f4620.h
 [v _PORTB PORTB `VEuc  1 e 1 @3969 ]
@@ -201,6 +219,42 @@ LCD_SHIFT_RIGHT 1
 ]
 [u S77 . 1 `S47 1 . 1 0 `S56 1 . 1 0 `S65 1 . 1 0 `S74 1 . 1 0 ]
 [v _PORTBbits PORTBbits `VES77  1 e 1 @3969 ]
+[s S207 . 1 `uc 1 RC0 1 0 :1:0 
+`uc 1 RC1 1 0 :1:1 
+`uc 1 RC2 1 0 :1:2 
+`uc 1 RC3 1 0 :1:3 
+`uc 1 RC4 1 0 :1:4 
+`uc 1 RC5 1 0 :1:5 
+`uc 1 RC6 1 0 :1:6 
+`uc 1 RC7 1 0 :1:7 
+]
+"405
+[s S216 . 1 `uc 1 T1OSO 1 0 :1:0 
+`uc 1 T1OSI 1 0 :1:1 
+`uc 1 CCP1 1 0 :1:2 
+`uc 1 SCK 1 0 :1:3 
+`uc 1 SDI 1 0 :1:4 
+`uc 1 SDO 1 0 :1:5 
+`uc 1 TX 1 0 :1:6 
+`uc 1 RX 1 0 :1:7 
+]
+[s S225 . 1 `uc 1 T13CKI 1 0 :1:0 
+`uc 1 CCP2 1 0 :1:1 
+`uc 1 . 1 0 :1:2 
+`uc 1 SCL 1 0 :1:3 
+`uc 1 SDA 1 0 :1:4 
+`uc 1 . 1 0 :1:5 
+`uc 1 CK 1 0 :1:6 
+`uc 1 DT 1 0 :1:7 
+]
+[s S234 . 1 `uc 1 T1CKI 1 0 :1:0 
+]
+[s S236 . 1 `uc 1 . 1 0 :1:0 
+`uc 1 PA2 1 0 :1:1 
+`uc 1 PA1 1 0 :1:2 
+]
+[u S240 . 1 `S207 1 . 1 0 `S216 1 . 1 0 `S225 1 . 1 0 `S234 1 . 1 0 `S236 1 . 1 0 ]
+[v _PORTCbits PORTCbits `VES240  1 e 1 @3970 ]
 [s S113 . 1 `uc 1 RE0 1 0 :1:0 
 `uc 1 RE1 1 0 :1:1 
 `uc 1 RE2 1 0 :1:2 
@@ -245,7 +299,7 @@ LCD_SHIFT_RIGHT 1
 ]
 [u S154 . 1 `S113 1 . 1 0 `S118 1 . 1 0 `S123 1 . 1 0 `S125 1 . 1 0 `S128 1 . 1 0 `S131 1 . 1 0 `S134 1 . 1 0 `S139 1 . 1 0 `S144 1 . 1 0 `S149 1 . 1 0 ]
 [v _PORTEbits PORTEbits `VES154  1 e 1 @3972 ]
-[s S458 . 1 `uc 1 LATA0 1 0 :1:0 
+[s S532 . 1 `uc 1 LATA0 1 0 :1:0 
 `uc 1 LATA1 1 0 :1:1 
 `uc 1 LATA2 1 0 :1:2 
 `uc 1 LATA3 1 0 :1:3 
@@ -255,7 +309,7 @@ LCD_SHIFT_RIGHT 1
 `uc 1 LATA7 1 0 :1:7 
 ]
 "907
-[s S467 . 1 `uc 1 LA0 1 0 :1:0 
+[s S541 . 1 `uc 1 LA0 1 0 :1:0 
 `uc 1 LA1 1 0 :1:1 
 `uc 1 LA2 1 0 :1:2 
 `uc 1 LA3 1 0 :1:3 
@@ -264,13 +318,13 @@ LCD_SHIFT_RIGHT 1
 `uc 1 LA6 1 0 :1:6 
 `uc 1 LA7 1 0 :1:7 
 ]
-[u S476 . 1 `S458 1 . 1 0 `S467 1 . 1 0 ]
-[v _LATAbits LATAbits `VES476  1 e 1 @3977 ]
+[u S550 . 1 `S532 1 . 1 0 `S541 1 . 1 0 ]
+[v _LATAbits LATAbits `VES550  1 e 1 @3977 ]
 "992
 [v _LATB LATB `VEuc  1 e 1 @3978 ]
 "1216
 [v _LATD LATD `VEuc  1 e 1 @3980 ]
-[s S839 . 1 `uc 1 LATD0 1 0 :1:0 
+[s S1054 . 1 `uc 1 LATD0 1 0 :1:0 
 `uc 1 LATD1 1 0 :1:1 
 `uc 1 LATD2 1 0 :1:2 
 `uc 1 LATD3 1 0 :1:3 
@@ -280,7 +334,7 @@ LCD_SHIFT_RIGHT 1
 `uc 1 LATD7 1 0 :1:7 
 ]
 "1243
-[s S848 . 1 `uc 1 LD0 1 0 :1:0 
+[s S1063 . 1 `uc 1 LD0 1 0 :1:0 
 `uc 1 LD1 1 0 :1:1 
 `uc 1 LD2 1 0 :1:2 
 `uc 1 LD3 1 0 :1:3 
@@ -289,9 +343,9 @@ LCD_SHIFT_RIGHT 1
 `uc 1 LD6 1 0 :1:6 
 `uc 1 LD7 1 0 :1:7 
 ]
-[u S857 . 1 `S839 1 . 1 0 `S848 1 . 1 0 ]
-[v _LATDbits LATDbits `VES857  1 e 1 @3980 ]
-[s S523 . 1 `uc 1 TRISA0 1 0 :1:0 
+[u S1072 . 1 `S1054 1 . 1 0 `S1063 1 . 1 0 ]
+[v _LATDbits LATDbits `VES1072  1 e 1 @3980 ]
+[s S602 . 1 `uc 1 TRISA0 1 0 :1:0 
 `uc 1 TRISA1 1 0 :1:1 
 `uc 1 TRISA2 1 0 :1:2 
 `uc 1 TRISA3 1 0 :1:3 
@@ -301,7 +355,7 @@ LCD_SHIFT_RIGHT 1
 `uc 1 TRISA7 1 0 :1:7 
 ]
 "1412
-[s S532 . 1 `uc 1 RA0 1 0 :1:0 
+[s S611 . 1 `uc 1 RA0 1 0 :1:0 
 `uc 1 RA1 1 0 :1:1 
 `uc 1 RA2 1 0 :1:2 
 `uc 1 RA3 1 0 :1:3 
@@ -310,9 +364,9 @@ LCD_SHIFT_RIGHT 1
 `uc 1 RA6 1 0 :1:6 
 `uc 1 RA7 1 0 :1:7 
 ]
-[u S541 . 1 `S523 1 . 1 0 `S532 1 . 1 0 ]
-[v _TRISAbits TRISAbits `VES541  1 e 1 @3986 ]
-[s S239 . 1 `uc 1 TRISB0 1 0 :1:0 
+[u S620 . 1 `S602 1 . 1 0 `S611 1 . 1 0 ]
+[v _TRISAbits TRISAbits `VES620  1 e 1 @3986 ]
+[s S352 . 1 `uc 1 TRISB0 1 0 :1:0 
 `uc 1 TRISB1 1 0 :1:1 
 `uc 1 TRISB2 1 0 :1:2 
 `uc 1 TRISB3 1 0 :1:3 
@@ -322,9 +376,9 @@ LCD_SHIFT_RIGHT 1
 `uc 1 TRISB7 1 0 :1:7 
 ]
 "1634
-[u S257 . 1 `S239 1 . 1 0 `S47 1 . 1 0 ]
-[v _TRISBbits TRISBbits `VES257  1 e 1 @3987 ]
-[s S398 . 1 `uc 1 TRISC0 1 0 :1:0 
+[u S370 . 1 `S352 1 . 1 0 `S47 1 . 1 0 ]
+[v _TRISBbits TRISBbits `VES370  1 e 1 @3987 ]
+[s S280 . 1 `uc 1 TRISC0 1 0 :1:0 
 `uc 1 TRISC1 1 0 :1:1 
 `uc 1 TRISC2 1 0 :1:2 
 `uc 1 TRISC3 1 0 :1:3 
@@ -334,20 +388,11 @@ LCD_SHIFT_RIGHT 1
 `uc 1 TRISC7 1 0 :1:7 
 ]
 "1856
-[s S407 . 1 `uc 1 RC0 1 0 :1:0 
-`uc 1 RC1 1 0 :1:1 
-`uc 1 RC2 1 0 :1:2 
-`uc 1 RC3 1 0 :1:3 
-`uc 1 RC4 1 0 :1:4 
-`uc 1 RC5 1 0 :1:5 
-`uc 1 RC6 1 0 :1:6 
-`uc 1 RC7 1 0 :1:7 
-]
-[u S416 . 1 `S398 1 . 1 0 `S407 1 . 1 0 ]
-[v _TRISCbits TRISCbits `VES416  1 e 1 @3988 ]
+[u S298 . 1 `S280 1 . 1 0 `S207 1 . 1 0 ]
+[v _TRISCbits TRISCbits `VES298  1 e 1 @3988 ]
 "2046
 [v _TRISD TRISD `VEuc  1 e 1 @3989 ]
-[s S207 . 1 `uc 1 TRISE0 1 0 :1:0 
+[s S320 . 1 `uc 1 TRISE0 1 0 :1:0 
 `uc 1 TRISE1 1 0 :1:1 
 `uc 1 TRISE2 1 0 :1:2 
 `uc 1 . 1 0 :1:3 
@@ -357,8 +402,29 @@ LCD_SHIFT_RIGHT 1
 `uc 1 IBF 1 0 :1:7 
 ]
 "2296
-[u S221 . 1 `S207 1 . 1 0 `S113 1 . 1 0 ]
-[v _TRISEbits TRISEbits `VES221  1 e 1 @3990 ]
+[u S334 . 1 `S320 1 . 1 0 `S113 1 . 1 0 ]
+[v _TRISEbits TRISEbits `VES334  1 e 1 @3990 ]
+[s S644 . 1 `uc 1 RD 1 0 :1:0 
+`uc 1 WR 1 0 :1:1 
+`uc 1 WREN 1 0 :1:2 
+`uc 1 WRERR 1 0 :1:3 
+`uc 1 FREE 1 0 :1:4 
+`uc 1 . 1 0 :1:5 
+`uc 1 CFGS 1 0 :1:6 
+`uc 1 EEPGD 1 0 :1:7 
+]
+"2947
+[s S653 . 1 `uc 1 . 1 0 :6:0 
+`uc 1 EEFS 1 0 :1:6 
+]
+[u S656 . 1 `S644 1 . 1 0 `S653 1 . 1 0 ]
+[v _EECON1bits EECON1bits `VES656  1 e 1 @4006 ]
+"2992
+[v _EECON2 EECON2 `VEuc  1 e 1 @4007 ]
+"2999
+[v _EEDATA EEDATA `VEuc  1 e 1 @4008 ]
+"3006
+[v _EEADR EEADR `VEuc  1 e 1 @4009 ]
 "4241
 [v _CCPR2L CCPR2L `VEuc  1 e 1 @4027 ]
 "4359
@@ -367,7 +433,7 @@ LCD_SHIFT_RIGHT 1
 [v _ADCON1 ADCON1 `VEuc  1 e 1 @4033 ]
 "4669
 [v _SSPCON2 SSPCON2 `VEuc  1 e 1 @4037 ]
-[s S974 . 1 `uc 1 SEN 1 0 :1:0 
+[s S1189 . 1 `uc 1 SEN 1 0 :1:0 
 `uc 1 RSEN 1 0 :1:1 
 `uc 1 PEN 1 0 :1:2 
 `uc 1 RCEN 1 0 :1:3 
@@ -377,24 +443,24 @@ LCD_SHIFT_RIGHT 1
 `uc 1 GCEN 1 0 :1:7 
 ]
 "4686
-[u S983 . 1 `S974 1 . 1 0 ]
-[v _SSPCON2bits SSPCON2bits `VES983  1 e 1 @4037 ]
+[u S1198 . 1 `S1189 1 . 1 0 ]
+[v _SSPCON2bits SSPCON2bits `VES1198  1 e 1 @4037 ]
 "4731
 [v _SSPCON1 SSPCON1 `VEuc  1 e 1 @4038 ]
-[s S924 . 1 `uc 1 SSPM 1 0 :4:0 
+[s S1139 . 1 `uc 1 SSPM 1 0 :4:0 
 `uc 1 CKP 1 0 :1:4 
 `uc 1 SSPEN 1 0 :1:5 
 `uc 1 SSPOV 1 0 :1:6 
 `uc 1 WCOL 1 0 :1:7 
 ]
 "4751
-[s S930 . 1 `uc 1 SSPM0 1 0 :1:0 
+[s S1145 . 1 `uc 1 SSPM0 1 0 :1:0 
 `uc 1 SSPM1 1 0 :1:1 
 `uc 1 SSPM2 1 0 :1:2 
 `uc 1 SSPM3 1 0 :1:3 
 ]
-[u S935 . 1 `S924 1 . 1 0 `S930 1 . 1 0 ]
-[v _SSPCON1bits SSPCON1bits `VES935  1 e 1 @4038 ]
+[u S1150 . 1 `S1139 1 . 1 0 `S1145 1 . 1 0 ]
+[v _SSPCON1bits SSPCON1bits `VES1150  1 e 1 @4038 ]
 "4801
 [v _SSPSTAT SSPSTAT `VEuc  1 e 1 @4039 ]
 "5022
@@ -403,23 +469,23 @@ LCD_SHIFT_RIGHT 1
 [v _SSPBUF SSPBUF `VEuc  1 e 1 @4041 ]
 "5107
 [v _PR2 PR2 `VEuc  1 e 1 @4043 ]
-[s S280 . 1 `uc 1 SCS 1 0 :2:0 
+[s S394 . 1 `uc 1 SCS 1 0 :2:0 
 `uc 1 IOFS 1 0 :1:2 
 `uc 1 OSTS 1 0 :1:3 
 `uc 1 IRCF 1 0 :3:4 
 `uc 1 IDLEN 1 0 :1:7 
 ]
 "5801
-[s S286 . 1 `uc 1 SCS0 1 0 :1:0 
+[s S400 . 1 `uc 1 SCS0 1 0 :1:0 
 `uc 1 SCS1 1 0 :1:1 
 `uc 1 . 1 0 :2:2 
 `uc 1 IRCF0 1 0 :1:4 
 `uc 1 IRCF1 1 0 :1:5 
 `uc 1 IRCF2 1 0 :1:6 
 ]
-[u S293 . 1 `S280 1 . 1 0 `S286 1 . 1 0 ]
-[v _OSCCONbits OSCCONbits `VES293  1 e 1 @4051 ]
-[s S310 . 1 `uc 1 T0PS 1 0 :3:0 
+[u S407 . 1 `S394 1 . 1 0 `S400 1 . 1 0 ]
+[v _OSCCONbits OSCCONbits `VES407  1 e 1 @4051 ]
+[s S424 . 1 `uc 1 T0PS 1 0 :3:0 
 `uc 1 PSA 1 0 :1:3 
 `uc 1 T0SE 1 0 :1:4 
 `uc 1 T0CS 1 0 :1:5 
@@ -427,19 +493,19 @@ LCD_SHIFT_RIGHT 1
 `uc 1 TMR0ON 1 0 :1:7 
 ]
 "5878
-[s S317 . 1 `uc 1 T0PS0 1 0 :1:0 
+[s S431 . 1 `uc 1 T0PS0 1 0 :1:0 
 `uc 1 T0PS1 1 0 :1:1 
 `uc 1 T0PS2 1 0 :1:2 
 `uc 1 . 1 0 :3:3 
 `uc 1 T016BIT 1 0 :1:6 
 ]
-[u S323 . 1 `S310 1 . 1 0 `S317 1 . 1 0 ]
-[v _T0CONbits T0CONbits `VES323  1 e 1 @4053 ]
+[u S437 . 1 `S424 1 . 1 0 `S431 1 . 1 0 ]
+[v _T0CONbits T0CONbits `VES437  1 e 1 @4053 ]
 "5940
 [v _TMR0L TMR0L `VEuc  1 e 1 @4054 ]
 "5947
 [v _TMR0H TMR0H `VEuc  1 e 1 @4055 ]
-[s S342 . 1 `uc 1 RBIF 1 0 :1:0 
+[s S456 . 1 `uc 1 RBIF 1 0 :1:0 
 `uc 1 INT0IF 1 0 :1:1 
 `uc 1 TMR0IF 1 0 :1:2 
 `uc 1 RBIE 1 0 :1:3 
@@ -449,7 +515,7 @@ LCD_SHIFT_RIGHT 1
 `uc 1 GIE_GIEH 1 0 :1:7 
 ]
 "6406
-[s S351 . 1 `uc 1 . 1 0 :1:0 
+[s S465 . 1 `uc 1 . 1 0 :1:0 
 `uc 1 INT0F 1 0 :1:1 
 `uc 1 T0IF 1 0 :1:2 
 `uc 1 . 1 0 :1:3 
@@ -458,12 +524,12 @@ LCD_SHIFT_RIGHT 1
 `uc 1 PEIE 1 0 :1:6 
 `uc 1 GIE 1 0 :1:7 
 ]
-[s S360 . 1 `uc 1 . 1 0 :6:0 
+[s S474 . 1 `uc 1 . 1 0 :6:0 
 `uc 1 GIEL 1 0 :1:6 
 `uc 1 GIEH 1 0 :1:7 
 ]
-[u S364 . 1 `S342 1 . 1 0 `S351 1 . 1 0 `S360 1 . 1 0 ]
-[v _INTCONbits INTCONbits `VES364  1 e 1 @4082 ]
+[u S478 . 1 `S456 1 . 1 0 `S465 1 . 1 0 `S474 1 . 1 0 ]
+[v _INTCONbits INTCONbits `VES478  1 e 1 @4082 ]
 "6864
 [v _CCP1M0 CCP1M0 `VEb  1 e 0 @32232 ]
 "6867
@@ -488,6 +554,10 @@ LCD_SHIFT_RIGHT 1
 [v _CCP2X CCP2X `VEb  1 e 0 @32213 ]
 "6906
 [v _CCP2Y CCP2Y `VEb  1 e 0 @32212 ]
+"7155
+[v _INT0IE INT0IE `VEb  1 e 0 @32660 ]
+"7158
+[v _INT0IF INT0IF `VEb  1 e 0 @32657 ]
 "7170
 [v _INT1IE INT1IE `VEb  1 e 0 @32643 ]
 "7173
@@ -531,52 +601,54 @@ LCD_SHIFT_RIGHT 1
 "69
 [v _nout nout `i  1 s 2 nout ]
 "20 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+[v _logs logs `[5][33]i  1 e 330 0 ]
+"22
 [v _keys keys `C[17]uc  1 e 17 0 ]
-"25
-[v _keyPressed keyPressed `VEa  1 e 1 0 ]
-"26
-[v _motorADistance motorADistance `VEi  1 e 2 0 ]
 "27
-[v _motorBDistance motorBDistance `VEi  1 e 2 0 ]
+[v _keyPressed keyPressed `VEa  1 e 1 0 ]
 "28
-[v _secondsMeasured secondsMeasured `VEi  1 e 2 0 ]
+[v _motorADistance motorADistance `VEi  1 e 2 0 ]
 "29
-[v _topBreakBeamTriggeredChange topBreakBeamTriggeredChange `VEa  1 e 1 0 ]
+[v _motorBDistance motorBDistance `VEi  1 e 2 0 ]
 "30
-[v _bottomBreakBeamTriggeredChange bottomBreakBeamTriggeredChange `VEa  1 e 1 0 ]
+[v _millisecondsMeasured millisecondsMeasured `VEi  1 e 2 0 ]
 "31
-[v _motorBDirection motorBDirection `VEa  1 e 1 0 ]
+[v _topBreakBeamTriggeredChange topBreakBeamTriggeredChange `VEa  1 e 1 0 ]
 "32
-[v _motorADirection motorADirection `VEa  1 e 1 0 ]
+[v _bottomBreakBeamTriggeredChange bottomBreakBeamTriggeredChange `VEa  1 e 1 0 ]
 "33
-[v _encoderBInterruptLast encoderBInterruptLast `VEa  1 e 1 0 ]
+[v _motorBDirection motorBDirection `VEa  1 e 1 0 ]
 "34
+[v _motorADirection motorADirection `VEa  1 e 1 0 ]
+"35
+[v _encoderBInterruptLast encoderBInterruptLast `VEa  1 e 1 0 ]
+"36
 [v _encoderAInterruptLast encoderAInterruptLast `VEa  1 e 1 0 ]
-"556
+"854
 [v _happynewyear happynewyear `C[7]uc  1 e 7 0 ]
-"627
+"932
 [v _main main `(v  1 e 1 0 ]
 {
-"651
-[v main@i i `uc  1 a 1 57 ]
-"731
-[v main@keyValue keyValue `uc  1 a 1 60 ]
-"730
-[v main@keypress keypress `uc  1 a 1 56 ]
-"630
-[v main@time time `[7]uc  1 a 7 45 ]
-"638
-[v main@tick tick `ul  1 a 4 52 ]
-"634
-[v main@currentRobotState currentRobotState `E3312  1 a 1 59 ]
-"636
-[v main@currentLogState currentLogState `E3319  1 a 1 58 ]
-"782
+"960
+[v main@i i `uc  1 a 1 12 ]
+"1040
+[v main@keyValue keyValue `uc  1 a 1 15 ]
+"1039
+[v main@keypress keypress `uc  1 a 1 11 ]
+"936
+[v main@time time `[7]uc  1 a 7 0 ]
+"947
+[v main@tick tick `ul  1 a 4 7 ]
+"943
+[v main@currentRobotState currentRobotState `E3391  1 a 1 14 ]
+"945
+[v main@currentLogState currentLogState `E3398  1 a 1 13 ]
+"1091
 } 0
-"580
+"879
 [v _robotInit robotInit `(v  1 e 1 0 ]
 {
-"625
+"923
 } 0
 "69 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\lcd.c
 [v _initLCD initLCD `(v  1 e 1 0 ]
@@ -601,60 +673,197 @@ LCD_SHIFT_RIGHT 1
 [v ___lldiv@divisor divisor `ul  1 p 4 9 ]
 "30
 } 0
-"126 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"187 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _EncoderInit EncoderInit `(v  1 e 1 0 ]
 {
-"138
+"201
 } 0
-"551
+"925
 [v _replaceOldLog replaceOldLog `(v  1 e 1 0 ]
 {
-"553
+"926
+[v replaceOldLog@i i `i  1 a 2 5 ]
+"930
 } 0
-"375
+"562
 [v _doOperation doOperation `(v  1 e 1 0 ]
 {
-"401
-[v doOperation@tiresToDrop tiresToDrop `i  1 a 2 39 ]
-"428
-[v doOperation@secondsMeasuredOld secondsMeasuredOld `i  1 a 2 36 ]
-"404
-[v doOperation@timeInOperation timeInOperation `i  1 a 2 33 ]
-"393
-[v doOperation@motorBSpeed motorBSpeed `i  1 a 2 31 ]
-"392
-[v doOperation@motorASpeed motorASpeed `i  1 a 2 29 ]
-"405
-[v doOperation@topLaserState topLaserState `a  1 a 1 42 ]
-"398
-[v doOperation@currentOperationState currentOperationState `E3286  1 a 1 41 ]
-"406
-[v doOperation@topLaserStatePrev topLaserStatePrev `a  1 a 1 38 ]
-"407
-[v doOperation@isDoneDrop isDoneDrop `a  1 a 1 35 ]
-"548
+"736
+[v doOperation@i i `i  1 a 2 79 ]
+"595
+[v doOperation@PIDData PIDData `[2]i  1 a 4 35 ]
+"591
+[v doOperation@timeInOperation timeInOperation `i  1 a 2 77 ]
+"588
+[v doOperation@tiresToDrop tiresToDrop `i  1 a 2 73 ]
+"635
+[v doOperation@millisecondsMeasuredOld millisecondsMeasuredOld `i  1 a 2 71 ]
+"602
+[v doOperation@counted counted `i  1 a 2 69 ]
+"618
+[v doOperation@timeStart timeStart `i  1 a 2 66 ]
+"594
+[v doOperation@tiresOnPole tiresOnPole `i  1 a 2 64 ]
+"593
+[v doOperation@motorBStartDistance motorBStartDistance `i  1 a 2 62 ]
+"592
+[v doOperation@motorAStartDistance motorAStartDistance `i  1 a 2 60 ]
+"604
+[v doOperation@badCountBot badCountBot `i  1 a 2 58 ]
+"603
+[v doOperation@badCount badCount `i  1 a 2 56 ]
+"596
+[v doOperation@topLaserState topLaserState `a  1 a 1 83 ]
+"598
+[v doOperation@bottomLaserState bottomLaserState `a  1 a 1 82 ]
+"585
+[v doOperation@currentOperationState currentOperationState `E3343  1 a 1 81 ]
+"599
+[v doOperation@bottomLaserStatePrev bottomLaserStatePrev `a  1 a 1 76 ]
+"597
+[v doOperation@topLaserStatePrev topLaserStatePrev `a  1 a 1 75 ]
+"600
+[v doOperation@isDoneDrop isDoneDrop `a  1 a 1 68 ]
+"634
+[v doOperation@send send `a  1 a 1 55 ]
+"797
 } 0
-"271
+"356
+[v _tirePositioning tirePositioning `(i  1 e 2 0 ]
+{
+"402
+[v tirePositioning@startDistance startDistance `i  1 a 2 14 ]
+"358
+[v tirePositioning@bottomBreakbeam bottomBreakbeam `i  1 a 2 26 ]
+"357
+[v tirePositioning@topBreakbeam topBreakbeam `i  1 a 2 24 ]
+"361
+[v tirePositioning@distanceRecordedBottom distanceRecordedBottom `i  1 a 2 22 ]
+"359
+[v tirePositioning@distanceRecordedTop distanceRecordedTop `i  1 a 2 20 ]
+"364
+[v tirePositioning@bottomPreviousState bottomPreviousState `i  1 a 2 18 ]
+"363
+[v tirePositioning@topPreviousState topPreviousState `i  1 a 2 16 ]
+"362
+[v tirePositioning@startDistanceBottom startDistanceBottom `i  1 a 2 12 ]
+"360
+[v tirePositioning@startDistanceTop startDistanceTop `i  1 a 2 10 ]
+"356
+[v tirePositioning@maxOperationTime maxOperationTime `i  1 p 2 8 ]
+"417
+} 0
+"117
+[v _opDelay opDelay `(v  1 e 1 0 ]
+{
+"118
+[v opDelay@startTime startTime `i  1 a 2 12 ]
+"117
+[v opDelay@millis millis `i  1 p 2 5 ]
+[v opDelay@maxOperationTime maxOperationTime `i  1 p 2 7 ]
+"122
+} 0
+"7 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\awdiv.c
+[v ___awdiv __awdiv `(i  1 e 2 0 ]
+{
+"10
+[v ___awdiv@quotient quotient `i  1 a 2 11 ]
+"11
+[v ___awdiv@sign sign `uc  1 a 1 10 ]
+[v ___awdiv@counter counter `uc  1 a 1 9 ]
+"7
+[v ___awdiv@dividend dividend `i  1 p 2 5 ]
+[v ___awdiv@divisor divisor `i  1 p 2 7 ]
+"41
+} 0
+"423 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+[v _sendArduinoTireDropRequest sendArduinoTireDropRequest `(v  1 e 1 0 ]
+{
+"480
+} 0
+"482
+[v _requestIsTireDropDone requestIsTireDropDone `(a  1 e 1 0 ]
+{
+"485
+[v requestIsTireDropDone@data data `uc  1 a 1 8 ]
+"491
+} 0
+"70 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\I2C.c
+[v _I2C_Master_Write I2C_Master_Write `(v  1 e 1 0 ]
+{
+[v I2C_Master_Write@byteToWrite byteToWrite `ui  1 p 2 6 ]
+"75
+} 0
+"65
+[v _I2C_Master_Stop I2C_Master_Stop `(v  1 e 1 0 ]
+{
+"68
+} 0
+"55
+[v _I2C_Master_Start I2C_Master_Start `(v  1 e 1 0 ]
+{
+"58
+} 0
+"77
+[v _I2C_Master_Read I2C_Master_Read `(uc  1 e 1 0 ]
+{
+[v I2C_Master_Read@ackBit ackBit `uc  1 a 1 wreg ]
+"84
+[v I2C_Master_Read@receivedByte receivedByte `uc  1 a 1 7 ]
+"77
+[v I2C_Master_Read@ackBit ackBit `uc  1 a 1 wreg ]
+[v I2C_Master_Read@ackBit ackBit `uc  1 a 1 6 ]
+"91
+} 0
+"21
+[v _I2C_Master_Wait I2C_Master_Wait `T(v  1 s 1 I2C_Master_Wait ]
+{
+"29
+} 0
+"261 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+[v _init_motor_PWM init_motor_PWM `(v  1 e 1 0 ]
+{
+"302
+} 0
+"539
+[v _errorCorrectedMove errorCorrectedMove `(v  1 e 1 0 ]
+{
+"542
+[v errorCorrectedMove@BSpeed BSpeed `i  1 a 2 30 ]
+"541
+[v errorCorrectedMove@ASpeed ASpeed `i  1 a 2 28 ]
+"540
+[v errorCorrectedMove@error error `i  1 a 2 26 ]
+"539
+[v errorCorrectedMove@goalSpeed goalSpeed `i  1 p 2 8 ]
+[v errorCorrectedMove@turnRatio turnRatio `f  1 p 4 10 ]
+[v errorCorrectedMove@motorAStartDistance motorAStartDistance `i  1 p 2 14 ]
+[v errorCorrectedMove@motorBStartDistance motorBStartDistance `i  1 p 2 16 ]
+[v errorCorrectedMove@correctionConstant correctionConstant `f  1 p 4 18 ]
+"559
+} 0
+"334
 [v _setMotorSpeeds setMotorSpeeds `(v  1 e 1 0 ]
 {
-[v setMotorSpeeds@motorASpeed motorASpeed `i  1 p 2 89 ]
-[v setMotorSpeeds@Aforward Aforward `a  1 p 1 91 ]
-[v setMotorSpeeds@motorBSpeed motorBSpeed `i  1 p 2 92 ]
-"282
+[v setMotorSpeeds@motorASpeed motorASpeed `i  1 p 2 107 ]
+[v setMotorSpeeds@Aforward Aforward `a  1 p 1 109 ]
+[v setMotorSpeeds@Bforward Bforward `a  1 p 1 110 ]
+[v setMotorSpeeds@motorBSpeed motorBSpeed `i  1 p 2 111 ]
+"352
 } 0
-"241
+"304
 [v _set_pwm_duty_cycle set_pwm_duty_cycle `(v  1 e 1 0 ]
 {
-"254
-[v set_pwm_duty_cycle@duty_valB duty_valB `us  1 a 2 83 ]
-"253
-[v set_pwm_duty_cycle@duty_valA duty_valA `us  1 a 2 81 ]
-"247
-[v set_pwm_duty_cycle@max_duty_val max_duty_val `us  1 a 2 79 ]
-"241
-[v set_pwm_duty_cycle@dutyA dutyA `f  1 p 4 69 ]
-[v set_pwm_duty_cycle@dutyB dutyB `f  1 p 4 73 ]
-"269
+"317
+[v set_pwm_duty_cycle@duty_valB duty_valB `us  1 a 2 101 ]
+"316
+[v set_pwm_duty_cycle@duty_valA duty_valA `us  1 a 2 99 ]
+"310
+[v set_pwm_duty_cycle@max_duty_val max_duty_val `us  1 a 2 97 ]
+"304
+[v set_pwm_duty_cycle@dutyA dutyA `f  1 p 4 87 ]
+[v set_pwm_duty_cycle@dutyB dutyB `f  1 p 4 91 ]
+"332
 } 0
 "10 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\xxtofl.c
 [v ___xxtofl __xxtofl `(d  1 e 4 0 ]
@@ -675,30 +884,30 @@ LCD_SHIFT_RIGHT 1
 [v ___fltol __fltol `(l  1 e 4 0 ]
 {
 "45
-[v ___fltol@exp1 exp1 `uc  1 a 1 53 ]
-[v ___fltol@sign1 sign1 `uc  1 a 1 52 ]
+[v ___fltol@exp1 exp1 `uc  1 a 1 86 ]
+[v ___fltol@sign1 sign1 `uc  1 a 1 85 ]
 "43
-[v ___fltol@f1 f1 `d  1 p 4 44 ]
+[v ___fltol@f1 f1 `d  1 p 4 77 ]
 "70
 } 0
 "8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\sprcmul.c
 [v ___flmul __flmul `(d  1 e 4 0 ]
 {
-[s S1443 . 4 `uc 1 a 1 0 `uc 1 b 1 1 `uc 1 c 1 2 `uc 1 d 1 3 ]
+[s S1660 . 4 `uc 1 a 1 0 `uc 1 b 1 1 `uc 1 c 1 2 `uc 1 d 1 3 ]
 "13
-[s S1448 . 4 `s 1 wordA 2 0 `s 1 wordB 2 2 ]
-[u S1451 . 4 `l 1 i 4 0 `d 1 f 4 0 `S1443 1 fAsBytes 4 0 `S1448 1 fAsWords 4 0 ]
-[v ___flmul@prod prod `S1451  1 a 4 38 ]
+[s S1665 . 4 `s 1 wordA 2 0 `s 1 wordB 2 2 ]
+[u S1668 . 4 `l 1 i 4 0 `d 1 f 4 0 `S1660 1 fAsBytes 4 0 `S1665 1 fAsWords 4 0 ]
+[v ___flmul@prod prod `S1668  1 a 4 38 ]
 "12
-[v ___flmul@grs grs `ul  1 a 4 32 ]
-[s S1519 . 2 `uc 1 a 1 0 `uc 1 b 1 1 ]
+[v ___flmul@grs grs `ul  1 a 4 33 ]
+[s S1736 . 2 `uc 1 a 1 0 `uc 1 b 1 1 ]
 "14
-[u S1522 . 2 `s 1 i 2 0 `us 1 n 2 0 `S1519 1 nAsBytes 2 0 ]
-[v ___flmul@temp temp `S1522  1 a 2 42 ]
+[u S1739 . 2 `s 1 i 2 0 `us 1 n 2 0 `S1736 1 nAsBytes 2 0 ]
+[v ___flmul@temp temp `S1739  1 a 2 42 ]
 "10
 [v ___flmul@bexp bexp `uc  1 a 1 37 ]
 "11
-[v ___flmul@aexp aexp `uc  1 a 1 36 ]
+[v ___flmul@aexp aexp `uc  1 a 1 32 ]
 "9
 [v ___flmul@sign sign `uc  1 a 1 31 ]
 "8
@@ -733,72 +942,59 @@ LCD_SHIFT_RIGHT 1
 [v ___fldiv@a a `d  1 p 4 48 ]
 "185
 } 0
-"293 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
-[v _sendArduinoTireDropRequest sendArduinoTireDropRequest `(v  1 e 1 0 ]
+"245 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\sprcadd.c
+[v ___flsub __flsub `(d  1 e 4 0 ]
 {
-"350
+[v ___flsub@b b `d  1 p 4 69 ]
+[v ___flsub@a a `d  1 p 4 73 ]
+"250
 } 0
-"352
-[v _requestIsTireDropDone requestIsTireDropDone `(a  1 e 1 0 ]
+"10
+[v ___fladd __fladd `(d  1 e 4 0 ]
 {
-"355
-[v requestIsTireDropDone@data data `uc  1 a 1 8 ]
-"361
+"17
+[v ___fladd@grs grs `uc  1 a 1 59 ]
+"15
+[v ___fladd@bexp bexp `uc  1 a 1 58 ]
+"16
+[v ___fladd@aexp aexp `uc  1 a 1 57 ]
+"13
+[v ___fladd@signs signs `uc  1 a 1 56 ]
+"10
+[v ___fladd@b b `d  1 p 4 44 ]
+[v ___fladd@a a `d  1 p 4 48 ]
+"237
 } 0
-"70 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\I2C.c
-[v _I2C_Master_Write I2C_Master_Write `(v  1 e 1 0 ]
+"7 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\awmod.c
+[v ___awmod __awmod `(i  1 e 2 0 ]
 {
-[v I2C_Master_Write@byteToWrite byteToWrite `ui  1 p 2 6 ]
-"75
+"10
+[v ___awmod@sign sign `uc  1 a 1 10 ]
+[v ___awmod@counter counter `uc  1 a 1 9 ]
+"7
+[v ___awmod@dividend dividend `i  1 p 2 5 ]
+[v ___awmod@divisor divisor `i  1 p 2 7 ]
+"34
 } 0
-"65
-[v _I2C_Master_Stop I2C_Master_Stop `(v  1 e 1 0 ]
-{
-"68
-} 0
-"55
-[v _I2C_Master_Start I2C_Master_Start `(v  1 e 1 0 ]
-{
-"58
-} 0
-"77
-[v _I2C_Master_Read I2C_Master_Read `(uc  1 e 1 0 ]
-{
-[v I2C_Master_Read@ackBit ackBit `uc  1 a 1 wreg ]
-"84
-[v I2C_Master_Read@receivedByte receivedByte `uc  1 a 1 7 ]
-"77
-[v I2C_Master_Read@ackBit ackBit `uc  1 a 1 wreg ]
-[v I2C_Master_Read@ackBit ackBit `uc  1 a 1 6 ]
-"91
-} 0
-"21
-[v _I2C_Master_Wait I2C_Master_Wait `T(v  1 s 1 I2C_Master_Wait ]
-{
-"29
-} 0
-"198 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
-[v _init_motor_PWM init_motor_PWM `(v  1 e 1 0 ]
-{
-"239
-} 0
-"152
+"215 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _TIMER_INIT TIMER_INIT `(v  1 e 1 0 ]
 {
-"165
+"228
 } 0
-"36
+"40
 [v _doDisplayLog doDisplayLog `(v  1 e 1 0 ]
 {
-"77
+"81
 [v doDisplayLog@keyValue keyValue `uc  1 a 1 22 ]
-"76
+"80
 [v doDisplayLog@keypress keypress `uc  1 a 1 20 ]
-"44
-[v doDisplayLog@currentDisplayState currentDisplayState `E3248  1 a 1 21 ]
-"36
-[v doDisplayLog@currentLogState currentLogState `i  1 p 2 14 ]
-"101
+"46
+[v doDisplayLog@currentPole currentPole `i  1 a 2 23 ]
+"48
+[v doDisplayLog@currentDisplayState currentDisplayState `E3250  1 a 1 21 ]
+"40
+[v doDisplayLog@logNumber logNumber `i  1 p 2 14 ]
+"113
 } 0
 "5 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\printf.c
 [v _printf printf `(i  1 e 2 0 ]
@@ -806,17 +1002,17 @@ LCD_SHIFT_RIGHT 1
 "8
 [v printf@ap ap `[1]*.39v  1 a 2 12 ]
 "5
-[v printf@fmt fmt `*.25Cuc  1 p 2 2 ]
+[v printf@fmt fmt `*.25Cuc  1 p 2 0 ]
 "13
 } 0
 "1368 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\doprnt.c
 [v _vfprintf vfprintf `(i  1 e 2 0 ]
 {
 "1371
-[v vfprintf@cfmt cfmt `*.25uc  1 a 2 0 ]
-[s S1022 _IO_FILE 0 ]
+[v vfprintf@cfmt cfmt `*.25uc  1 a 2 114 ]
+[s S1237 _IO_FILE 0 ]
 "1368
-[v vfprintf@fp fp `*.2S1022  1 p 2 108 ]
+[v vfprintf@fp fp `*.2S1237  1 p 2 108 ]
 [v vfprintf@fmt fmt `*.25Cuc  1 p 2 110 ]
 [v vfprintf@ap ap `*.39*.39v  1 p 2 112 ]
 "1382
@@ -829,13 +1025,13 @@ LCD_SHIFT_RIGHT 1
 "674
 [v vfpfcnvrt@ll ll `o  1 a 8 85 ]
 "673
-[v vfpfcnvrt@done done `i  1 a 2 104 ]
+[v vfpfcnvrt@done done `i  1 a 2 103 ]
 "672
 [v vfpfcnvrt@cp cp `*.35uc  1 a 2 101 ]
-[v vfpfcnvrt@c c `uc  1 a 1 103 ]
-[s S1022 _IO_FILE 0 ]
+[v vfpfcnvrt@c c `uc  1 a 1 107 ]
+[s S1237 _IO_FILE 0 ]
 "670
-[v vfpfcnvrt@fp fp `*.2S1022  1 p 2 75 ]
+[v vfpfcnvrt@fp fp `*.2S1237  1 p 2 75 ]
 [v vfpfcnvrt@fmt fmt `*.39*.25uc  1 p 2 77 ]
 [v vfpfcnvrt@ap ap `*.39*.39v  1 p 2 79 ]
 "1365
@@ -850,9 +1046,9 @@ LCD_SHIFT_RIGHT 1
 [v xtoa@i i `i  1 a 2 71 ]
 [v xtoa@w w `i  1 a 2 61 ]
 [v xtoa@p p `i  1 a 2 59 ]
-[s S1022 _IO_FILE 0 ]
+[s S1237 _IO_FILE 0 ]
 "623
-[v xtoa@fp fp `*.2S1022  1 p 2 36 ]
+[v xtoa@fp fp `*.2S1237  1 p 2 36 ]
 [v xtoa@d d `uo  1 p 8 38 ]
 [v xtoa@x x `uc  1 p 1 46 ]
 "665
@@ -894,12 +1090,12 @@ LCD_SHIFT_RIGHT 1
 "549
 [v stoa@w w `i  1 a 2 32 ]
 [v stoa@i i `i  1 a 2 30 ]
-[s S1022 _IO_FILE 0 ]
+[s S1237 _IO_FILE 0 ]
 "546
-[v stoa@fp fp `*.2S1022  1 p 2 18 ]
+[v stoa@fp fp `*.2S1237  1 p 2 18 ]
 [v stoa@s s `*.35uc  1 p 2 20 ]
 "548
-[v stoa@F1139 F1139 `[7]uc  1 s 7 F1139 ]
+[v stoa@F1144 F1144 `[7]uc  1 s 7 F1144 ]
 "589
 } 0
 "274
@@ -912,62 +1108,11 @@ LCD_SHIFT_RIGHT 1
 [v dtoa@s s `i  1 a 2 60 ]
 [v dtoa@w w `i  1 a 2 58 ]
 [v dtoa@p p `i  1 a 2 56 ]
-[s S1022 _IO_FILE 0 ]
+[s S1237 _IO_FILE 0 ]
 "274
-[v dtoa@fp fp `*.2S1022  1 p 2 36 ]
+[v dtoa@fp fp `*.2S1237  1 p 2 36 ]
 [v dtoa@d d `o  1 p 8 38 ]
 "315
-} 0
-"72
-[v _pad pad `(i  1 s 2 pad ]
-{
-"74
-[v pad@w w `i  1 a 2 34 ]
-[v pad@i i `i  1 a 2 32 ]
-[s S1022 _IO_FILE 0 ]
-"72
-[v pad@fp fp `*.2S1022  1 p 2 25 ]
-[v pad@buf buf `*.39uc  1 p 2 27 ]
-[v pad@p p `i  1 p 2 29 ]
-"95
-} 0
-"12 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\strlen.c
-[v _strlen strlen `(ui  1 e 2 0 ]
-{
-"14
-[v strlen@a a `*.35Cuc  1 a 2 7 ]
-"12
-[v strlen@s s `*.35Cuc  1 p 2 5 ]
-"26
-} 0
-"8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\nf_fputs.c
-[v _fputs fputs `(i  1 e 2 0 ]
-{
-"11
-[v fputs@i i `i  1 a 2 23 ]
-"10
-[v fputs@c c `uc  1 a 1 22 ]
-"8
-[v fputs@s s `*.39Cuc  1 p 2 18 ]
-[s S1630 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
-[v fputs@fp fp `*.2S1630  1 p 2 20 ]
-"19
-} 0
-"8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\nf_fputc.c
-[v _fputc fputc `(i  1 e 2 0 ]
-{
-[v fputc@c c `i  1 p 2 9 ]
-[s S1630 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
-[v fputc@fp fp `*.2S1630  1 p 2 11 ]
-"21
-} 0
-"102 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\lcd.c
-[v _putch putch `(v  1 e 1 0 ]
-{
-[v putch@data data `uc  1 a 1 wreg ]
-[v putch@data data `uc  1 a 1 wreg ]
-[v putch@data data `uc  1 a 1 8 ]
-"105
 } 0
 "1 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\abs.c
 [v _abs abs `(i  1 e 2 0 ]
@@ -998,6 +1143,68 @@ LCD_SHIFT_RIGHT 1
 [v ___aodiv@dividend dividend `o  1 p 8 5 ]
 [v ___aodiv@divisor divisor `o  1 p 8 13 ]
 "43
+} 0
+"259 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\doprnt.c
+[v _ctoa ctoa `(i  1 s 2 ctoa ]
+{
+"261
+[v ctoa@w w `i  1 a 2 39 ]
+[s S1237 _IO_FILE 0 ]
+"259
+[v ctoa@fp fp `*.2S1237  1 p 2 36 ]
+[v ctoa@c c `uc  1 p 1 38 ]
+"270
+} 0
+"72
+[v _pad pad `(i  1 s 2 pad ]
+{
+"74
+[v pad@w w `i  1 a 2 34 ]
+[v pad@i i `i  1 a 2 32 ]
+[s S1237 _IO_FILE 0 ]
+"72
+[v pad@fp fp `*.2S1237  1 p 2 25 ]
+[v pad@buf buf `*.39uc  1 p 2 27 ]
+[v pad@p p `i  1 p 2 29 ]
+"95
+} 0
+"12 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\strlen.c
+[v _strlen strlen `(ui  1 e 2 0 ]
+{
+"14
+[v strlen@a a `*.35Cuc  1 a 2 7 ]
+"12
+[v strlen@s s `*.35Cuc  1 p 2 5 ]
+"26
+} 0
+"8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\nf_fputs.c
+[v _fputs fputs `(i  1 e 2 0 ]
+{
+"11
+[v fputs@i i `i  1 a 2 23 ]
+"10
+[v fputs@c c `uc  1 a 1 22 ]
+"8
+[v fputs@s s `*.39Cuc  1 p 2 18 ]
+[s S1847 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
+[v fputs@fp fp `*.2S1847  1 p 2 20 ]
+"19
+} 0
+"8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\nf_fputc.c
+[v _fputc fputc `(i  1 e 2 0 ]
+{
+[v fputc@c c `i  1 p 2 9 ]
+[s S1847 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
+[v fputc@fp fp `*.2S1847  1 p 2 11 ]
+"21
+} 0
+"102 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\lcd.c
+[v _putch putch `(v  1 e 1 0 ]
+{
+[v putch@data data `uc  1 a 1 wreg ]
+[v putch@data data `uc  1 a 1 wreg ]
+[v putch@data data `uc  1 a 1 8 ]
+"105
 } 0
 "4 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\atoi.c
 [v _atoi atoi `(i  1 e 2 0 ]
@@ -1074,17 +1281,26 @@ LCD_SHIFT_RIGHT 1
 [v ___llmod@divisor divisor `ul  1 p 4 9 ]
 "25
 } 0
-"792 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"1101 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _interruptHandler interruptHandler `IIH(v  1 e 1 0 ]
 {
-"812
+"1124
 } 0
-"105
+"146
 [v _updateMotorBEncoder updateMotorBEncoder `(v  1 e 1 0 ]
 {
-"108
-[v updateMotorBEncoder@val val `i  1 a 2 3 ]
-"106
+"148
+[v updateMotorBEncoder@directionPin directionPin `i  1 a 2 3 ]
+"147
 [v updateMotorBEncoder@interruptPinState interruptPinState `i  1 a 2 1 ]
-"124
+"154
+} 0
+"177
+[v _updateMotorAEncoder updateMotorAEncoder `(v  1 e 1 0 ]
+{
+"179
+[v updateMotorAEncoder@directionPin directionPin `i  1 a 2 3 ]
+"178
+[v updateMotorAEncoder@interruptPinState interruptPinState `i  1 a 2 1 ]
+"185
 } 0

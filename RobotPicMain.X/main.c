@@ -16,6 +16,11 @@
 #include "lcd.h"
 #include "I2C.h"
 
+//global variables
+int logs[5][48];//five logs(four saved and one current), with 48 info pieces per log (25*3 pole infos + 3 intro infos)
+    //logs format:
+    //operation time, tires supplied, number of poles, (tires deployed on pole, tires on pole after op, distance to pole) * the pole number
+    
 
 const char keys[] = "123A456B789C*0#D";
 //const char msg1[] = "Standby";
@@ -25,7 +30,7 @@ const char keys[] = "123A456B789C*0#D";
 volatile bool keyPressed = false;
 volatile int motorADistance = 0;
 volatile int motorBDistance = 0;
-volatile int secondsMeasured = 0;
+volatile int millisecondsMeasured = 0;
 volatile bool topBreakBeamTriggeredChange = 0;
 volatile bool bottomBreakBeamTriggeredChange = 0;
 volatile bool motorBDirection = true;//the rotation direction of motor B
@@ -33,7 +38,9 @@ volatile bool motorADirection = true;
 volatile bool encoderBInterruptLast;
 volatile bool encoderAInterruptLast;
 
-void doDisplayLog(int currentLogState){
+
+
+void doDisplayLog(int logNumber){
     lcd_home();
     /*
     printf("%s", "Displaying log");
@@ -47,9 +54,9 @@ void doDisplayLog(int currentLogState){
             case opTime:
                 //display standby screen
                 lcd_home();
-                printf("%s", "OP. TIME Xs");//ADD VARIABLE LATER
+                printf("%s%d%s", "OP. TIME ",logs[logNumber][0], "s");//ADD VARIABLE LATER
                 lcd_set_ddram_addr(LCD_LINE2_ADDR);
-                printf("%s","X TIR. SUPPLIED");
+                printf("%s%d", "TIR. SUPPLIED ",logs[logNumber][1]);
                 lcd_set_ddram_addr(LCD_LINE3_ADDR);
                 printf("%s","(1) POLE INFO");
                 lcd_set_ddram_addr(LCD_LINE4_ADDR);
@@ -57,11 +64,11 @@ void doDisplayLog(int currentLogState){
                 break;
             case pole:
                 lcd_home();
-                printf("%s", "POLE X/Y");//FIX LATER
+                printf("%s%d%s%d", "POLE ", currentPole,"/", logs[logNumber][2]);//FIX LATER
                 lcd_set_ddram_addr(LCD_LINE2_ADDR);
-                printf("%s","TIR. DEPLOY: X");
+                printf("%s%d","TIR. DEPLOY: ", logs[logNumber][3+(currentPole-1)*2]);
                 lcd_set_ddram_addr(LCD_LINE3_ADDR);
-                printf("%s","TIRE. ON POLE: X");
+                printf("%s%d","TIRE. ON POLE: ", logs[logNumber][4+(currentPole-1)*2]);
                 lcd_set_ddram_addr(LCD_LINE4_ADDR);
                 printf("%s","1<- 2-> 3MENU");//MANUALLY TYPE ARROWS WITH BITS LATER
                 break;
@@ -89,6 +96,14 @@ void doDisplayLog(int currentLogState){
                         currentDisplayState = opTime;
                         currentPole = 1;
                         //should also have if statement for adding and subtracting from currentPole later
+                    } else if (keyValue == '2'){
+                        if(currentPole < logs[logNumber][2]){
+                            currentPole++;
+                        }
+                    } else if (keyValue == '1') {
+                        if (currentPole > 1){
+                            currentPole--;
+                        }
                     }
                     break;
             }
@@ -100,9 +115,17 @@ void doDisplayLog(int currentLogState){
     return;
 }
 
+//DELAY FUNCTION FOR OPERATIONS
+//a function that delays for some number of milliseconds that will exit in case the time of the operation is up
+void opDelay( int millis, int maxOperationTime){
+    int startTime = millisecondsMeasured;
+    while (millisecondsMeasured < maxOperationTime && (millisecondsMeasured - startTime) < millis){ 
+    }
+    return;
+}
 
 //encoder distance measurement stuff (code ideas from https://www.dfrobot.com/wiki/index.php/Micro_DC_Motor_with_Encoder-SJ02_SKU:_FIT0458)
-void updateMotorBEncoder(){
+void updateMotorBEncoderOLD(){
   int interruptPinState = PORTBbits.RB2;//the interrupt pin for motor B
   if(encoderBInterruptLast == 0 && interruptPinState==1){
     int val = PORTEbits.RE2;//the direction input from the encoder
@@ -123,25 +146,68 @@ void updateMotorBEncoder(){
   }
 }
 
+void updateMotorBEncoder(){
+  int interruptPinState = PORTBbits.RB2;//the interrupt pin for motor B
+  int directionPin = PORTCbits.RC0;//the direction input from the encoder
+  if(directionPin == interruptPinState){
+    motorBDistance++;
+  } else {
+    motorBDistance--;
+  }
+}
+
+void updateMotorAEncoderOLD(){
+  int interruptPinState = PORTBbits.RB0;//the interrupt pin for motor B
+  if(encoderAInterruptLast == 0 && interruptPinState==1){
+    int val = PORTEbits.RE1;//the direction input from the encoder
+    if(val == 0 && motorADirection){
+      motorADirection = false; //Reverse
+    }
+    else if(val == 1 && !motorADirection){
+      motorADirection = true;  //Forward
+    }
+  }
+  encoderAInterruptLast = interruptPinState;
+ 
+  //change the encoder distance measured for motor B
+  if(!motorADirection){
+      motorADistance++;
+  }else{
+      motorADistance--;
+  }
+}
+
+void updateMotorAEncoder(){
+  int interruptPinState = PORTBbits.RB0;//the interrupt pin for motor B
+  int directionPin = PORTEbits.RE1;//the direction input from the encoder
+  if(directionPin == interruptPinState){
+    motorADistance--;
+  } else {
+    motorADistance++;
+  }
+}
+
 void EncoderInit(){
   motorBDirection = true;//default -> Forward  
   motorADirection = true;
   
   //set up motor encoder pin direction input
-  TRISEbits.TRISE2 = 1;//motor B
-  TRISEbits.TRISE1 = 1; //motorA
-  TRISBbits.TRISB2 = 1;//motor B
-  TRISBbits.TRISB0 = 1;//motor A
+  TRISCbits.TRISC0 = 1;//motor B direction
+  TRISEbits.TRISE1 = 1; //motorA direction
+  TRISBbits.TRISB2 = 1;//motor B distance
+  TRISBbits.TRISB0 = 1;//motor A distance
   
   //set up encoder interrupt pin for RB2
   INT2IE = 1;
+  //and RB0
+  INT0IE = 1;
 }
 
 //CLOCK STUFF
 
 #define OSC_CLOCKS_PER_INSTRUCTION_CYCLE (4ul)
-#define TIMER0_PRESCALE_COUNT (64ul)
-#define TIMER0_COUNTS_PER_HALF_SECOND (65536ul - (((_XTAL_FREQ / OSC_CLOCKS_PER_INSTRUCTION_CYCLE)/TIMER0_PRESCALE_COUNT)/2ul))
+#define TIMER0_PRESCALE_COUNT (2ul)
+#define TIMER0_COUNTS_PER_HALF_SECOND (65536ul - (((_XTAL_FREQ / OSC_CLOCKS_PER_INSTRUCTION_CYCLE)/TIMER0_PRESCALE_COUNT)/1000ul))
 
 /*this function not needed for external oscillator... aka for this program*/
 void CLK_INIT( void ){
@@ -154,7 +220,7 @@ void TIMER_INIT( void ){
     T0CONbits.T08BIT  = 0;      //select 16-bit mode
     T0CONbits.T0CS    = 0;      //select the internal clock to drive timer0//this is actually clk0 which is one fourth of external clock signal
     T0CONbits.PSA     = 0;      //use prescaler for TIMER0
-    T0CONbits.T0PS    = 0b101;  //assign the 1:64 pre-scaler to TIMER0 
+    T0CONbits.T0PS    = 0b000;  //assign the 1:64 pre-scaler to TIMER0 
     TMR0H = TIMER0_COUNTS_PER_HALF_SECOND >> 8;
     TMR0L = TIMER0_COUNTS_PER_HALF_SECOND;
     T0CONbits.TMR0ON  = 1;      //enable TIMER0
@@ -167,8 +233,8 @@ void TIMER_INIT( void ){
 
 //set timer interrupt for 1 second
 void initSecondTimer(){
-    //set secondsMeasured to zero
-    secondsMeasured = 0;
+    //set millisecondsMeasured to zero
+    millisecondsMeasured = 0;
     //set timer interrupt:
     T08BIT = 0; //set to 16 bit timer
     T0PS2 = 1;//set timer to 256 prescaler
@@ -186,13 +252,14 @@ void initSecondTimer(){
     return;
 }
 
+
 void stopTimer(){//stop the 16 bit timer from counting seconds
     TMR0IE = 0;//disable timer0 interrupt
 }
 /*
 do an operation 
  
- */
+*/
 
 //initialize the motor pwm
 void init_motor_PWM(){
@@ -261,31 +328,98 @@ void set_pwm_duty_cycle(float dutyA, float dutyB){
 
         
         //pwm to port rc1
-        CCP2X = duty_valB & 2; // Set the 2 least significant bit in CCP1CON register
+        CCP2X = duty_valB & 2; // Set the 2 least significant bit in CCP2CON register
         CCP2Y = duty_valB & 1;
-        CCPR2L = duty_valB >> 2; // Set rest of the duty cycle bits in CCPR1L
+        CCPR2L = duty_valB >> 2; // Set rest of the duty cycle bits in CCPR2L
 
     }
 }
 
-void setMotorSpeeds(int motorASpeed, bool Aforward, int motorBSpeed){
+void setMotorSpeeds(int motorASpeed, bool Aforward, bool Bforward, int motorBSpeed){
     if (Aforward){
-        LATAbits.LATA0 = 0;
-        LATAbits.LATA1 = 1;
-    } else {
         LATAbits.LATA0 = 1;
         LATAbits.LATA1 = 0;
+    } else {
+        LATAbits.LATA0 = 0;
+        LATAbits.LATA1 = 1;
+    }
+    if (Bforward){
+        LATAbits.LATA2 = 1;
+        LATAbits.LATA3 = 0;
+    } else {
+        LATAbits.LATA2 = 0;
+        LATAbits.LATA3 = 1;
     }
     //LATCbits.LATC7 = 1;
     set_pwm_duty_cycle((float) motorASpeed, (float) motorBSpeed);
     return;
 }
 
-/*
-int tirePositioning(){
-    return 1;
-}
 
+//this function positions the robot on the pole and  returns the number of tires on the pole
+int tirePositioning(int maxOperationTime){
+    int topBreakbeam;
+    int bottomBreakbeam;
+    int distanceRecordedTop;
+    int startDistanceTop;
+    int distanceRecordedBottom;
+    int startDistanceBottom;
+    int topPreviousState = 1; //assume the break beam was high before the function started.
+    int bottomPreviousState = 1;//assume the break beam was high before the function started
+    
+    /////analyze the pole and collect data on the distances travelled while the breakbeam lasers are triggered
+    while(millisecondsMeasured < maxOperationTime){
+        topBreakbeam = PORTBbits.RB4;
+        bottomBreakbeam = PORTBbits.RB5;
+        if (topBreakbeam == 0 && topPreviousState == 1){
+            startDistanceTop = motorADistance;
+        }
+        if (bottomBreakbeam == 0 && bottomPreviousState == 1){
+            startDistanceBottom = motorADistance;
+        }
+        if(!topBreakbeam){//if still seeing the top tire then continue to increase the top tire distance
+            distanceRecordedTop = abs(motorADistance - startDistanceTop);
+        }
+        if(!bottomBreakbeam){//if still seeing the bottom tire then continue to increase the bottom tire distance
+            distanceRecordedBottom = abs(motorADistance - startDistanceBottom);            
+        }
+        if(topBreakbeam && bottomBreakbeam){//leave the loop if the robot has passed by the pole and its tires
+            break;
+        }
+        topPreviousState = topBreakbeam;
+        bottomPreviousState = bottomBreakbeam;
+    }
+    /////position the robot so that the tire dropping mechanism is on top of the poles
+    if (distanceRecordedTop < 170){// if there is no top tire then go until the pole is hit by the top break beam
+        setMotorSpeeds(0, true, true, 0);
+        opDelay(100, maxOperationTime);
+        while(millisecondsMeasured < maxOperationTime && PORTBbits.RB4 == 1){
+            setMotorSpeeds(30, false, false, 30);
+        }
+        setMotorSpeeds(0, true, true, 0);
+    } else {//if there is a top tire then go backwards until the bottom tire is detected and then halfway through it
+        setMotorSpeeds(0, true, true, 0);        
+        opDelay(100, maxOperationTime);
+        while(millisecondsMeasured < maxOperationTime && PORTBbits.RB4 == 1){
+            setMotorSpeeds(30, false, false, 30);
+        }
+        int startDistance = motorADistance;
+        while(millisecondsMeasured < maxOperationTime && abs(startDistance - motorADistance) < distanceRecordedBottom/2){
+            setMotorSpeeds(30, false, false, 30);
+        }
+        setMotorSpeeds(0, true, true, 0);
+    }
+    
+    /////return the correct number of tires that were on the pole
+    if (distanceRecordedTop  < 170 && distanceRecordedBottom < 170){ // if there are no tires on the pole, typically the pole width is about 130
+        return 0;
+    } else if (abs(distanceRecordedTop - distanceRecordedBottom) > 180){ //the breakbeam separation for if there is one tire is about 300 encoder units
+        return 1; //one tire is on the pole if there is a big difference between the two break beam distances
+    } else {
+        return 2;//two tires are on the pole if there is a small difference between the two break beam distances
+    }
+}
+/*
 void addPoleToLog(int tiresToDrop){
     return;
 }
@@ -372,6 +506,80 @@ checkForPolesInWay(int* leftPole, int* rightPole){
     return;
 }
 */
+
+//non-blocking error corrected PID speed setting
+//turn ratio is greater than 1 for motor B going fast
+//derivative data is an array that holds the last error [0] and the integral [1]
+void PIDCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, int motorBStartDistance, float kp, float kd, float ki, int * derivativeData){
+    int error = (int)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/turnRatio);
+    int derivative = error - derivativeData[0];
+    derivativeData[0] = error;
+    int integral = derivativeData[1] + error;
+    int correctionTerm = (int)(error*kp + derivative*kd + integral*ki);
+    int ASpeed = goalSpeed - correctionTerm;
+    int BSpeed = (int)((goalSpeed*turnRatio + correctionTerm));
+    
+    if (ASpeed > 100){
+        ASpeed = 100;
+    } 
+    if (ASpeed < 0){
+        ASpeed = 0;
+    }
+    if (BSpeed > 100){
+        BSpeed = 100;
+    }
+    if (BSpeed < 0){
+        BSpeed = 0;
+    }
+    
+    setMotorSpeeds(ASpeed , true, true, BSpeed);
+    return;
+}
+
+
+
+//non-blocking error corrected speed setting
+//turn ratio is greater than 1 for motor B going fast
+void errorCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, int motorBStartDistance, float correctionConstant){
+    int error = (int)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/turnRatio);
+    int ASpeed = (int)(goalSpeed - error*correctionConstant);
+    int BSpeed = (int)((goalSpeed*turnRatio + error*correctionConstant));
+    
+    if (ASpeed > 100){
+        ASpeed = 100;
+    } 
+    if (ASpeed < 0){
+        ASpeed = 0;
+    }
+    if (BSpeed > 100){
+        BSpeed = 100;
+    }
+    if (BSpeed < 0){
+        BSpeed = 0;
+    }
+    
+    setMotorSpeeds(ASpeed , true, true, BSpeed);
+    return;
+}
+
+//function to drive forward for some number of degrees 
+//meant to be used in doOperation
+//breaks if operation time limit is reached
+//distance is in degrees
+//stops the motors after
+void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, int distanceDegrees, int maxOperationTime){
+    int motorAStartDistance = motorADistance;
+    int motorBStartDistance = motorBDistance;
+
+    //change the startDistance after every movement in dooperation
+    
+    while (millisecondsMeasured < maxOperationTime && abs(motorADistance - motorAStartDistance) < distanceDegrees){ 
+        errorCorrectedMove(goalSpeed, turnRatio, motorAStartDistance, motorBStartDistance, correctionConstant);
+    }
+    return;
+}
+
+
 void doOperation(){
     // Write the address of the slave device, that is, the Arduino Nano. Note
     // that the Arduino Nano must be configured to be running as a slave with
@@ -383,41 +591,73 @@ void doOperation(){
     I2C_Master_Stop();
 
     //set timer for 3 minutes
-    //initSecondTimer();//start the timer so secondsMeasured start to get updated
+    //initSecondTimer();//start the timer so millisecondsMeasured start to get updated
     //  CLK_INIT();
     TIMER_INIT();
-    secondsMeasured = 0;
+    millisecondsMeasured = 0;
     //set variables
-	int goalSpeed = 20;
-	int motorASpeed = 100;
-	int motorBSpeed = 100;
+	int goalSpeed = 30;
+	int motorASpeed = 30;
+	int motorBSpeed = 30;
 	int errorScaleFactor = 1;
 	int error = 0;
 	int currentAngle = 0;
-	enum operationStates {moveForward, poleFinding, tireDrop, courseAdjustment, returnHome, complete};
+	enum operationStates {moveForward, poleFinding, tireDrop, courseAdjustment, returnHome, complete, leavePole};
 	enum operationStates currentOperationState = moveForward;
 	int leftRangeFinder = 0;
 	int rightRangeFinder = 0;
 	int tiresToDrop = 0;
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
-    int timeInOperation = 20; //length in seconds
+    int timeInOperation = 15000; //length in milliseconds
+    int motorAStartDistance = motorADistance;//RESET TO 0 AFTER EVERY MOVEMENT
+    int motorBStartDistance = motorBDistance;//RESET TO 0 AFTER EVERY MOVEMENT
+
+    int PIDData[2] = {0,0};//this is the last error and the integral in one data structure, RESET TO {0,0} after every movement;
     bool topLaserState;
     bool topLaserStatePrev;
+    bool bottomLaserState;
+    bool bottomLaserStatePrev;
     bool isDoneDrop;
     init_motor_PWM();
+    int counted = 0;
+    int badCount = 0;
+    int badCountBot = 0;
+    
+    //poleData
+    int poleNumber = 0;
+    int tiresDeployedOnPole = 0;
+    int tiresOnPoleAfterOp = 0;
+    int tiresOnPole = 0;//initial number of tires on pole
+    
+    int totalTiresSupplied = 0;
+
+    int distanceToPole = 0;
+    int distanceFromLastPole = 0;
+
+    
+    //NOTE...
+    //MAKE SURE TO RESET PIDData, motorAStartDistancte, and motorBStartDistance before movements
     
     //initialize pins for operation
-    TRISAbits.TRISA0 = 0;//pin for motor direction
-    TRISAbits.TRISA1 = 0;//pin for motor direction
+    TRISAbits.TRISA0 = 0;//pin for motor A direction
+    TRISAbits.TRISA1 = 0;//pin for motor A direction
+    TRISAbits.TRISA2 = 0;//pin for motor B direction
+    TRISAbits.TRISA3 = 0;//pin for motor B direction
+    
     //TRISCbits.TRISC7 = 0;//pin for motor direction
     TRISAbits.TRISA4 = 0;//pin for disabling keypad
-    
-    
     LATAbits.LATA4 = 1;///disable the keypad during the operation by putting voltage to the kpd bit
-    
+    int timeStart = millisecondsMeasured;
+    while(millisecondsMeasured < timeStart + 100){//wait to let the B bits settle after turning off the keypad before using break beams
+     //let break beams settle   
+    }
+
     topLaserState = PORTBbits.RB4;//set top laser state variable to the current state of the laser
     topLaserStatePrev = topLaserState;
+    bottomLaserState = PORTBbits.RB5;//set top laser state variable to the current state of the laser
+    bottomLaserStatePrev = bottomLaserState;
+    
     //RBIE = 1; //enable the on change interrupts for the laser break beams
     
     //FIX FIND OUT HOW TO	enable the on change interrupts in PORTRB4 and PORTRB5;
@@ -425,75 +665,132 @@ void doOperation(){
         // Main loop
 
     bool send = true;
-    int secondsMeasuredOld = 0;
+    int millisecondsMeasuredOld = 0;
     //LATCbits.LATC7 = 1;
     /*LATAbits.LATA0 = 0;
     LATAbits.LATA1 = 1;*/
     while (1){
+        counted ++;
         topLaserStatePrev = topLaserState;
         topLaserState = PORTBbits.RB4;
- 		if (secondsMeasured > secondsMeasuredOld){
-            secondsMeasuredOld++;
+        bottomLaserStatePrev = bottomLaserState;
+        bottomLaserState = PORTBbits.RB5;
+ 		if (millisecondsMeasured > millisecondsMeasuredOld){
+            millisecondsMeasuredOld++;
         }       
 
         //__delay_ms(1);
         switch (currentOperationState){
             case moveForward: //moving the robot to the next pole
+                if (counted%100 == 0){
                 lcd_clear();//prepare screen for next state        
-                printf("%d", secondsMeasured);
+                printf("%d", millisecondsMeasured);
                 lcd_set_ddram_addr(LCD_LINE3_ADDR);
                 printf("%d", topLaserState);
                 lcd_set_ddram_addr(LCD_LINE2_ADDR);
-                printf("%d", motorBDistance);
+                printf("B: %d", motorBDistance);
+                lcd_set_ddram_addr(LCD_LINE4_ADDR);
+                printf("A: %d", motorADistance);
+                }
+                //printf("hello");
                 /*error = motorADistance - motorBDistance;//proportional distance error correction
 				motorASpeed = goalSpeed - error*errorScaleFactor;
 				motorBSpeed = goalSpeed + error*errorScaleFactor;*/
-				setMotorSpeeds(motorASpeed, true, motorBSpeed); //write new speeds to PORTC1 and PORTC2 PWM pins; 
+				/*testing nonpwm, also comment out init_motor_pwm
+                TRISCbits.TRISC2 = 0;
+                TRISCbits.TRISC1 = 0;
+                
+                LATCbits.LATC1 = 1;
+                LATCbits.LATC2 = 1;
+                
+                LATAbits.LATA2 = 0;
+                LATAbits.LATA3 = 1;
+
+                LATAbits.LATA2 = 1;
+                LATAbits.LATA3 = 0;*/
+                //PIDCorrectedMove(goalSpeed, 1, motorAStartDistance, motorBStartDistance, 0.1, 0, 0, PIDData);
+                errorCorrectedMove(30, 1, motorAStartDistance, motorBStartDistance, 0.1);
+                //setMotorSpeeds(30, true, true, 30); //write new speeds to PORTC1 and PORTC2 PWM pins; 
                 break;
             case poleFinding: //finding out the number of tires on the pole and positioning the robot by the pole
-                /*
-                //find out the number of tires on the pole and position the robot to the pole; 
-                tiresToDrop = tirePositioning();
-				//store into the logs the information about this pole;
-				addPoleToLog(tiresToDrop);
-                //start writing to I2C Arduino address;
-				//send command to Arduino via I2C asking for a tire drop;
+                //set up pole data:
+                distanceFromLastPole = motorADistance - distanceToPole;
+                distanceToPole = motorADistance;
+
+                poleNumber++;
+                
+                //find out the number of tires on the pole and position the robot to the pole
+                tiresOnPole = tirePositioning(timeInOperation);
+				lcd_clear();//prepare screen for next state        
+                printf("TIRE DROP");
+                lcd_set_ddram_addr(LCD_LINE2_ADDR);
+                printf("%d on pole", tiresOnPole);
+                ////TEST CODE
+                setMotorSpeeds(0, true, true, 0);
+                while(millisecondsMeasured < timeInOperation){
+                    
+                }
+                ////END OF TEST CODE
+                
+
+                
+                
 				sendArduinoTireDropRequest();
-                //tiresToDrop = 1 or 2 depending ont he number needed on the pole;
-                */
-                sendArduinoTireDropRequest();
+                //tiresToDrop = 1 or 2 depending on he number needed on the pole;
+
                 tiresToDrop = 1;//hard-coded for now
                 currentOperationState = tireDrop;
                 lcd_clear();//prepare screen for next state        
                 printf("TIRE DROP");
-                setMotorSpeeds(0, true, 0);
+                setMotorSpeeds(0, true, true, 0);
 				break;
 			case tireDrop:
-				
                 //send command to arduino via i2c asking if the tire-drop is complete;
 				isDoneDrop = requestIsTireDropDone();
                 //isDoneDrop is given true or false in communication over I2C;
 				if (isDoneDrop){
 					tiresToDrop -- ;
+                    tiresDeployedOnPole++;
 					if (tiresToDrop == 0){
-						currentOperationState = moveForward;
+						currentOperationState = leavePole;
+                                            //reset pole data for next pole:
+                        tiresOnPole = 0;
+                        totalTiresSupplied += tiresDeployedOnPole;//???? QUESTION IF THIS IS THE RIGHT ALGORITHM OR IF THIS SHOULD BE TIRES THAT MAKE IT TO POLE
+                        tiresDeployedOnPole = 0;
+                        tiresDeployedOnPole = 0;
 					} else {
                         //send command to Arduino via I2C asking for a tire drop for the next tire
 						sendArduinoTireDropRequest();	
 					}
 				}
+
+
                 
 				break;
 			case courseAdjustment:
 				//adjustCourse();//improve
                 currentOperationState = moveForward;
 				break;
-			case returnHome:
+            case leavePole:
+                //move forward a bit to leave tire without disrupting break-beams
+                opErrorCorrectionDegrees(30, 1, 1, 400, timeInOperation);//note this is a blocking function but it will return if time runs out
+                //set the state to continue to next pole
+                motorAStartDistance = 0;//start distance must be reset before the next movement forward
+                motorBStartDistance = 0;
+                currentOperationState = moveForward;
+                
+                //CHECK FOR NUMBER OF POLES AND UPDATE THE NUMBER OF POLES ON THE POLE
+                break;
+			case returnHome://to be worked on after evaluation
 				//returnHome();//improve
 				currentOperationState = complete;
 				break;
 			case complete:
-				setMotorSpeeds(0, true, 0);
+                //FIX this should update logs constantly
+                for (int i = 0; i < 48; i++){
+                    logs[0][i] = 3;//index 0 means the justRan log
+                }
+				setMotorSpeeds(0, true, true, 0);
                 LATAbits.LATA4 = 0; //enable the keypad once again now that operation is over
 				return;
         }
@@ -512,7 +809,7 @@ void doOperation(){
 			}
 		}*/
 		//check for the various interrupt conditions
-		if (secondsMeasured >= timeInOperation){
+		if (millisecondsMeasured >= timeInOperation){
 			currentOperationState = complete;
             //also send ABORT message to arduino
 		}
@@ -523,8 +820,14 @@ void doOperation(){
                     topBreakBeamTriggeredChange = 0;
 					currentOperationState = poleFinding;
 				}*/
-                if (topLaserStatePrev != topLaserState){
-                    currentOperationState = poleFinding;
+                if (topLaserStatePrev != topLaserState || bottomLaserStatePrev != bottomLaserState){
+                    if (topLaserStatePrev != topLaserState){
+                        badCount++;
+                    } 
+                    if (bottomLaserStatePrev != bottomLaserState){
+                        badCountBot++;
+                    }
+                    currentOperationState = poleFinding;//UNCOMMENT THIS FOR TESTING ARDUINO
                 }//do same for bottom laser as well
 				break;
             case poleFinding: //finding out the number of tires on the pole and positioning the robot by the pole
@@ -533,6 +836,8 @@ void doOperation(){
 				break;
 			case courseAdjustment:
 				break;
+            case leavePole:
+                break;
 			case returnHome:
 				break;
 			case complete:
@@ -546,13 +851,62 @@ void doOperation(){
 
     return;
 }
+/////////////////////////////
+//START OF EEPROM SAMPLE CODE
+// read and write eeprom of PIC18F2550 (and 18F2455, 18F4455, 18F4550)
+// EEPROM size is 256 bytes
+// (c) Raphael Wimmer. Licensed under GNU GPL v2 or higher
+
+#pragma stack 0x300 0xff // set 64 byte stack at 0x300, needed by sdcc
 
 
-void replaceOldLog(){
-    return;
+void ee_write_byte(unsigned char address, unsigned char *_data){
+
+    EEDATA = *_data;
+    EEADR = address;
+    // start write sequence as described in datasheet, page 91
+    EECON1bits.EEPGD = 0;
+    EECON1bits.CFGS = 0;
+    EECON1bits.WREN = 1; // enable writes to data EEPROM
+    INTCONbits.GIE = 0;  // disable interrupts
+    EECON2 = 0x55;
+    EECON2 = 0x0AA;
+    EECON1bits.WR = 1;   // start writing
+    do {
+        ClrWdt();
+        } while(EECON1bits.WR);                            // occupato ? 
+    EECON1bits.WREN=0;                                // disabilita write
+    
+}
+
+void ee_read_byte(unsigned char address, unsigned char *_data){
+    EEADR = address;
+    EECON1bits.CFGS = 0;
+    EECON1bits.EEPGD = 0;
+    EECON1bits.RD = 1;
+    *_data = EEDATA;
+}
+/*
+void initUsart()
+{
+    usart_open(    // Use USART library to initialise the hardware
+            USART_TX_INT_OFF
+            & USART_RX_INT_OFF
+            & USART_BRGH_HIGH
+            & USART_ASYNCH_MODE
+            & USART_EIGHT_BIT,
+            10                      // '10' = 115200 Baud with 20 MHz oscillator and BRGH=1
+            );
+    stdout = STREAM_USART;
 }
 
 
+
+// very simple example. use on an erased eeprom
+*/
+/////////END OF EEPROM SAMPLE CODE
+//////////////////////////////////
+ 
 const char happynewyear[7] = {
     00, // 45 Seconds 
     55, // 59 Minutes
@@ -577,10 +931,10 @@ void rtc_set_time(void){
     I2C_Master_Stop(); //Stop condition
 }
 
+
 void robotInit(void){
     //initialize motor encoder stuff:
     EncoderInit();
-    
     // RD2 is the character LCD RS
     // RD3 is the character LCD enable (E)
     // RD4-RD7 are character LCD data lines
@@ -624,10 +978,21 @@ void robotInit(void){
     return;
 }
 
-void main(void) {
+void replaceOldLog(){
+    for (int i = 0; i< 48; i++){
+        logs[4][i] = logs[0][i];//index 0 is the justran log and index 4 is the most recent log to be written to eeprom
+    }
+    return;
+}
+
+void main() {
     robotInit();
+    
     //unsigned char* time = robotInit();
     unsigned char time[7]; // Create a byte array to hold time read from RTC
+    
+    //logs format
+    //operation time, tires supplied, number of poles, (tires deployed on pole, tires on pole after op, distance to pole) * the pole number
     
     // Main loop
     enum robotStates {standby, operation, operationComplete, selectLog, displayLog};//this is a list of the possible states of the robot
@@ -800,14 +1165,36 @@ void __interrupt() interruptHandler(void){
     INTCONbits.TMR0IF = 0;      //CLEAR FLAG SO IT CAN BE TRIGGERED AGAIN
     TMR0H = TIMER0_COUNTS_PER_HALF_SECOND >> 8;
     TMR0L = TIMER0_COUNTS_PER_HALF_SECOND;
-    secondsMeasured++;           //increase the timer count
-   } else if (INT2IF){//motor encoder RB2
+    millisecondsMeasured++;           //increase the timer count
+   } else if (INT2IF){//motor B encoder RB2
        INT2IF = 0;
        updateMotorBEncoder();
-   } /*else if (RBIF){//if it is the laser break beam changing state
+   } else if (INT0IF){//motor A encoder RB0
+       INT0IF = 0;
+       updateMotorAEncoder();
+   }  /*else if (RBIF){//if it is the laser break beam changing state
        PORTBbits.RB4;
        RBIF = 0;
        topBreakBeamTriggeredChange = 1;
    }*/
 }
 
+void mainEEPROM(void){
+    robotInit();
+        lcd_clear();
+    lcd_home();
+    char save_me = 'x';
+    char from_eeprom;
+
+    //initUsart();
+     robotInit();
+    printf("EEPROM-Demon");
+    ee_read_byte(0x00, &from_eeprom);
+    printf("read: %cn", from_eeprom);
+    
+    ee_write_byte(0x00, &save_me);
+    printf("wrote: %cn", save_me);
+    
+    ee_read_byte(0x00, &from_eeprom);
+    printf("read: %cnn", from_eeprom);
+}

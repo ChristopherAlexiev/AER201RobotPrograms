@@ -1,19 +1,64 @@
 /* i2c components based off of sample code for i2c from Michael Ding and Tyler Gamvrelis
  */
 
+///////INCLUDE STATEMENTS////////////
+////////////////////////////////////
 #include <Wire.h>
+#include <Servo.h>
 
-void setup(){
-    Wire.begin(8); // Join I2C bus with address 8
-  
-    // Register callback functions
-    Wire.onReceive(receiveEvent); // Called when this slave device receives a data transmission from master
-    Wire.onRequest(requestEvent); // Called when master requests data from this slave device
-  
-    // Open serial port to PC (hardware UART)
-    Serial.begin(9600);      
-}
+///////PIN ASSIGNMENTS//////////////
+////////////////////////////////////
+//note that D3 is sketchy
+/*
+const int trigPin = 3;
+const int echoPin = 12;
+const int snapActionPin = 2;
+const int electricBumpPin = 13;
+const int cranePusherServoPin = 9;
+const int linearServoPin = 6;
+const int rotatorOnePin = 10;
+const int rotatorTwoPin = 11;
+*/
 
+const int stepperPinOne = 2;
+const int stepperPinTwo = 7;
+const int stepperPinThree = 8;
+const int stepperPinFour = 13;
+const int trigPin = 3;
+const int echoPin = 12;
+const int snapActionPin = A5;
+const int electricBumpPin = A4;
+const int cranePusherServoPin = 9;
+const int linearServoPin = 6;
+const int rotatorOnePin = 10;
+const int rotatorTwoPin = 11;
+
+///////GLOBALS/////////////////////
+//////////////////////////////////
+//various constants
+const int rotatorUpValueOne = 10;//maximum value for tire rotator servo
+const int rotatorDownValueOne = 100;//minimum value for tire rotator servo 
+const int rotatorUpValueTwo = 100;//maximum value for tire rotator servo
+const int rotatorDownValueTwo = 10;//minimum value for tire rotator servo 
+const int craneStopSpeed = 95;
+const int linearStopSpeed = 95;
+//need to add for rotator 1
+const int ITwoCAddress = 8;
+
+//moving ultrasonic avg
+const int lengthAvg = 25; // note this used to be int const
+long movingAvgArr[lengthAvg];
+long movingAvgSum = 0;
+int currentAvgArrayIndex = 0;
+long movingAvg;
+
+//servo objects
+Servo cranePusherServo; //create crane pushing servo object
+Servo linearServo;
+Servo rotatorOne;
+Servo rotatorTwo;
+
+//volatile variables changed in interrupt functions
 volatile bool send_to_pic = false;
 volatile uint8_t incomingByte;
 volatile bool doTireDrop;
@@ -21,149 +66,235 @@ volatile int snapSwitchTriggered = 0;
 volatile int finishedYet = false;
 volatile int tireDropRequested = false;
 
-void loop(){
-  
-/*
-  enum tireStacks {one, two, three, four};
-  enum tireStacks currentTireStack = one;
-  enum arduinoStates {preparingTire, bipolarPush, craneMoveToTire, craneMoveToPole, flapDown, , complete};
-  enum operationStates currentArduinoState = idle;
-  
-    while (1){
-    
-    //all stacks up, crane open
-    
-    //START
-    
-    //bring crane to current tire stack with snap action sensor
-    while(!snapSwitchTriggered){
-        positionCraneMoveServo ++;
-        //add distance to stepper motor that controls crane;
-    }
-    
-    //lower flapper of current tire stack
-    while (position is greater than 0 degrees){
-      //lower flapper stepper motor to a lower position   
-      switch (currentTireStack){//FINISH DETAILS!!!!!
-            case one: //moving the robot to the next pole    
-                positionFlapperLeft --;
-        break;
-            case two:
-        positionFlapperLeft --;
-        break;
-      case three:
-        positionFlapperRight --;
-        break;
-      case four:
-        positionFlapperRight --;
-        break;
-    }
-    
-    //close crane clamp
-    for(enough degrees to close crane){
-        positionClampServo ++;
-        //add distance to stepper motor that controls crane;
-    }
-    
-    //move crane away from lowered side to the end of robot
-    while(1){
-        
-      //lower flapper stepper motor to a lower position   
-      switch (currentTireStack){//FINISH DETAILS!!!!!
-            case one: //moving the robot to the next pole    
-                positionCraneMoveServo ++;
-        break;
-            case two:
-        positionCraneMoveServo ++;
-        break;
-      case three:
-        positionCraneMoveServo --;
-        break;
-      case four:
-        positionCraneMoveServo --;
-        break;
-      if(snapSwitchTriggered){
-        bumpsDetected ++;
-      }
-      if (currentTireStack and current number of bumps detected are right){
-        break;
-      }
-    }
-    
-    //raise flapper of current tire stack
-    while (position is less than 0- degrees){
-      //raise flapper stepper motor to a lower position   
-      switch (currentTireStack){//FINISH DETAILS!!!!!
-            case one: //moving the robot to the next pole    
-                positionFlapperLeft ++;
-        break;
-            case two:
-        positionFlapperLeft ++;
-        break;
-      case three:
-        positionFlapperRight ++;
-        break;
-      case four:
-        positionFlapperRight ++;
-        break;
-    }
-    */
-    //wait for tireDrop to equal true... ie for the PIC to send a tire drop request
-    while (!tireDropRequested){
-    }
-    tireDropRequested = false;
-
-    delay(1000);//simulate tire drop with a delay for now
-    
-    finishedYet = true;
-    /*
-    //scan stacks left to right until ultrasonic sensor sees something (for now)
-    //move crane from the far side to the pole
-    while(ultrasonic reading is big){
-        
-      //lower flapper stepper motor to a lower position   
-      switch (currentTireStack){//FINISH DETAILS!!!!!
-            case one: //moving the robot to the next pole    
-                positionCraneMoveServo ++;
-        break;
-            case two:
-        positionCraneMoveServo ++;
-        break;
-      case three:
-        positionCraneMoveServo --;
-        break;
-      case four:
-        positionCraneMoveServo --;
-        break;
-      
-    }
-    
-    //open crane clamp
-    for(enough degrees to open crane){
-        positionClampServo --;
-        //add distance to stepper motor that controls crane clamp;
-    }
-    
-    finishedYet = true;
-    
-    currentTireStack ++;
-    //if currentT == 1 then push all with the bipolar motor
-    if (currentTireStack == 1){
-      set bipolar motor direction and power variables;
-      for (number of steps required){
-        servo.step();
-      }
-    }
-    
-    */
-    /*
-    // If we should send to the PIC, then we wait to receive a byte from the PC
-    if (send_to_pic && Serial.available() > 0 && !incomingByte) {
-        incomingByte = Serial.read();
-    }
-    */
+//////INIT AND SETUP FUNCTIONS////////////////
+///////////////////////////////////
+void initMovingAvg(){
+  //initialize avg array
+  for (int i = 0; i < lengthAvg; i++ ) {
+    movingAvgArr[i] = 200; /* set element at location i to i + 100 */
+  }
+  movingAvg = 200;
+  movingAvgSum = 200*lengthAvg;
+  return;
 }
 
+
+
+void setup(){
+    //I2C setup
+    Wire.begin(ITwoCAddress); // Join I2C bus with address 8
+    Wire.onReceive(receiveEvent); // Called when this slave device receives a data transmission from master
+    Wire.onRequest(requestEvent); // Called when master requests data from this slave device
+
+    //attach servos to their ports
+    cranePusherServo.attach(cranePusherServoPin);
+    linearServo.attach(linearServoPin);
+    rotatorOne.attach(rotatorOnePin);
+    rotatorTwo.attach(rotatorTwoPin);
+    
+  
+    // Open serial port to PC (hardware UART)
+    Serial.begin(9600);      
+
+    //ultrasonic setup
+    pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+    pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+
+    //more pin setup
+    pinMode(snapActionPin, INPUT);
+    pinMode(electricBumpPin, INPUT);
+
+    
+}
+
+
+
+/////////HELPER FUNCTIONS///////////////
+////////////////////////////////////////
+
+//get the ultrasonic distance reading from the sensor
+long ultrasonicDistance(){
+    // Clears the trigPin
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    // Sets the trigPin on HIGH state for 10 micro seconds
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    // Reads the echoPin, returns the sound wave travel time in microseconds
+    long duration = pulseIn(echoPin, HIGH, 4000);
+    // Calculating the distance
+    long distance= duration*0.034/2;
+    // Prints the distance on the Serial Monitor
+
+    return distance;
+}
+
+//change the movingAvg of the ultrasonic sensors value based on the current ultrasonic sensor reading
+void changeUltrasonicMovingAvg(){
+    long distance = 0;
+    distance = ultrasonicDistance();
+    movingAvgSum -= movingAvgArr[currentAvgArrayIndex];
+    movingAvgSum += distance;
+    movingAvgArr[currentAvgArrayIndex] = distance;
+    movingAvg = movingAvgSum/lengthAvg;
+    currentAvgArrayIndex ++;
+    if (currentAvgArrayIndex == lengthAvg){
+      currentAvgArrayIndex = 0;
+    }
+    return;
+}
+
+
+//lower flapper two. this is a blocking function
+void lowerFlapperTwo(){//time in ms
+    for (int pos = rotatorUpValueTwo; pos > rotatorDownValueTwo; pos -= 1) { // goes from 0 degrees to 180 degrees
+      // in steps of 1 degree
+      rotatorTwo.write(pos);              // tell servo to go to position in variable 'pos'
+      delay(15);                       // waits 15ms for the servo to reach the position
+    }
+    return;
+  /*
+  unsigned long startTime = millis();
+
+  unsigned long posPerTime = (rotatorDownValue - rotatorUpValue)/milliseconds;=
+  \
+  unsigned long pos = 130;
+  for(milliseconds; milliseconds > 0 ; milliseconds --){
+    pos += posPerTime
+    rotatorTwo.write(pos);
+    delay(1);
+  }
+  return;
+  */
+}
+//lower flapper two. this is a blocking function
+void raiseFlapperTwo(){//time in ms
+    for (int pos = rotatorDownValueTwo; pos < rotatorUpValueTwo; pos += 2) { // goes from 0 degrees to 180 degrees
+      // in steps of 1 degree
+      rotatorTwo.write(pos);              // tell servo to go to position in variable 'pos'
+      delay(15);                       // waits 15ms for the servo to reach the position
+    }
+    return;
+}
+
+////////////////MAIN LOOP///////////////////
+///////////////////////////////////////////
+
+//note that the order of the flappers visited is 3,2,4,1 (from the starboard to port side of the robot is 1,2,3,4)
+//flapperCase shows the flapper that must currently being accessed
+//clampLoc shows the location of the clamp in terms of the flapper it is currently located at
+int flapperCase = 3;//the first flapper to visit
+int clampLoc = 2;
+unsigned long startTime = 0;
+
+void loop(){
+  /*//old code used for testing
+  initMovingAvg();
+  long distanceOne;*/
+  while (!tireDropRequested){//wait for pic to send i2c tire drop request
+      /*
+      changeUltrasonicMovingAvg();
+      Serial.print("Distance: ");
+      //distanceOne = ultrasonicDistance();
+      //Serial.println(distanceOne);
+      Serial.println(movingAvg);*/
+      break;
+  }
+  tireDropRequested = false;//clear tire drop request
+  if (flapperCase == 3 || flapperCase == 4){//the following cases are for if the tire is to be picked up from the 
+    
+    //START OF TIRE DROP PROCEDURE///////////////////////
+ 
+  //init the servo motors
+    rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
+    rotatorOne.write(rotatorUpValueOne);
+    cranePusherServo.write(craneStopSpeed);//keep crane still
+    
+  //wait for snap button
+    while (digitalRead(snapActionPin) == HIGH){//wait for the snap action pin before crane moves
+
+    }  
+    delay(50);
+
+    
+    linearServo.write(0);//open clamp
+    startTime = millis();
+    
+    /*linearServo.write(linearStopSpeed);
+    delay(5000);
+    linearServo.write(180);
+    delay(17000);
+    linearServo.write(linearStopSpeed);*/
+    
+    /*linearServo.write(180);
+    delay(10000);
+    linearServo.write(linearStopSpeed);
+    delay(5000);
+    linearServo.write(0);//open clamp
+    delay(5000);    
+    linearServo.write(180);//open clamp
+    delay(5000);*/
+    
+    
+    
+    //go to electric bump and stop then wait until enough time has passed to open clamp then lower tire
+    cranePusherServo.write(180);//move to electric bump
+    
+    while (digitalRead(electricBumpPin) == LOW){
+      if (millis()-startTime > 17000){
+        linearServo.write(linearStopSpeed);
+      }
+    }
+    cranePusherServo.write(craneStopSpeed);
+
+    whil0e(millis()-startTime <= 17000){
+    //wait for the time taken by the clamp to open  
+    }
+    linearServo.write(linearStopSpeed);
+    
+    lowerFlapperTwo(); //lower the flapper
+
+    
+    linearServo.write(180);//close the clamp
+    delay(16000);
+
+    //move in the other direction away from the flapper all the way to the outermost point
+    cranePusherServo.write(0);//move clamp right until ebump farthest ebump pin
+    delay(1000); //pass over the current bump pin
+    while (digitalRead(electricBumpPin) == LOW){
+    }
+    
+    delay(1000);//pass over the non-outermost ebump
+
+    cranePusherServo.write(0);  
+    while (digitalRead(electricBumpPin) == LOW){
+    }
+    cranePusherServo.write(90);//stop the clamp at the outermost ebump pin
+     rotatorTwo.write(rotatorUpValueTwo);//non-blocking raising of the rotatorTwo
+    //move the servo until the ultrasonic sensor sees the pole
+    cranePusherServo.write(130);
+    delay(2000);//pass over the non-outermost ebump and away from wall
+    
+    initMovingAvg();
+    while (movingAvg>15){//move until the ultrasonic sensor sees the pole
+      changeUltrasonicMovingAvg();
+      Serial.println(movingAvg);
+    }
+    cranePusherServo.write(90);
+
+    //drop tire by opening clamp
+    linearServo.write(180);
+    
+    
+  } else {//if flapper is 1 or 4
+    
+  }
+  delay(10000);
+}
+
+////////////////////I2C INTERRUPT FUNCTIONS/////////////
+////////////////////////////////////////////////////////
 /** @brief Callback for when the master transmits data */
 void receiveEvent(void){
     /*
@@ -190,7 +321,7 @@ void receiveEvent(void){
 void requestEvent(void){
     if(finishedYet){
       Wire.write('1');
-      Serial.print("TRUE");
+      Serial.println("TRUE");
     }else{
       Wire.write('0');
     }
@@ -205,3 +336,6 @@ interruptHandler(){
   }
 }
 */
+
+/////////END////////////
+////////////////////////
