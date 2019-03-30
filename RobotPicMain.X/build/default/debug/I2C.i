@@ -4391,7 +4391,7 @@ extern __attribute__((nonreentrant)) void _delay3(unsigned char);
 #pragma config IESO = OFF
 
 
-#pragma config PWRT = OFF
+#pragma config PWRT = ON
 #pragma config BOREN = SBORDIS
 #pragma config BORV = 3
 

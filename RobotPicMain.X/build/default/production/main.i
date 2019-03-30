@@ -5234,7 +5234,7 @@ const char keys[] = "123A456B789C*0#D";
 volatile _Bool keyPressed = 0;
 volatile int motorADistance = 0;
 volatile int motorBDistance = 0;
-volatile int millisecondsMeasured = 0;
+volatile unsigned long millisecondsMeasured = 0;
 volatile _Bool topBreakBeamTriggeredChange = 0;
 volatile _Bool bottomBreakBeamTriggeredChange = 0;
 volatile _Bool motorBDirection = 1;
@@ -5321,8 +5321,8 @@ void doDisplayLog(int logNumber){
 
 
 
-void opDelay( int millis, int maxOperationTime){
-    int startTime = millisecondsMeasured;
+void opDelay( int millis, unsigned long maxOperationTime){
+    unsigned long startTime = millisecondsMeasured;
     while (millisecondsMeasured < maxOperationTime && (millisecondsMeasured - startTime) < millis){
     }
     return;
@@ -5554,7 +5554,10 @@ void setMotorSpeeds(int motorASpeed, _Bool Aforward, _Bool Bforward, int motorBS
 
 
 
-int tirePositioning(int maxOperationTime){
+int tirePositioning(unsigned long maxOperationTime){
+    { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+    { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
+    printf("TIRE POSITIONING");
     int topBreakbeam;
     int bottomBreakbeam;
     int distanceRecordedTop;
@@ -5632,7 +5635,7 @@ void sendArduinoTireDropRequest(){
     I2C_Master_Write(0b00010000);
     I2C_Master_Write(data);
     I2C_Master_Stop();
-# 483 "main.c"
+# 486 "main.c"
     return;
 }
 
@@ -5650,6 +5653,21 @@ void sendArduinoTireOperationStartMessage(){
     return;
 }
 
+void sendArduinoAbortOperationMessage(){
+
+
+
+
+    unsigned char data = '3';
+
+    I2C_Master_Start();
+    I2C_Master_Write(0b00010000);
+    I2C_Master_Write(data);
+    I2C_Master_Stop();
+    return;
+}
+
+
 _Bool requestIsTireDropDone(){
     I2C_Master_Start();
     I2C_Master_Write(0b00010001);
@@ -5660,7 +5678,7 @@ _Bool requestIsTireDropDone(){
     }
     return 0;
 }
-# 527 "main.c"
+# 545 "main.c"
 void PIDCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, int motorBStartDistance, float kp, float kd, float ki, int * derivativeData){
     int error = (int)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/turnRatio);
     int derivative = error - derivativeData[0];
@@ -5718,7 +5736,7 @@ void errorCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance,
 
 
 
-void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, int distanceDegrees, int maxOperationTime){
+void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, int distanceDegrees, unsigned long maxOperationTime){
     int motorAStartDistance = motorADistance;
     int motorBStartDistance = motorBDistance;
 
@@ -5748,7 +5766,7 @@ void doOperation(){
     TIMER_INIT();
     millisecondsMeasured = 0;
 
- int goalSpeed = 30;
+ int goalSpeed = 20;
  int motorASpeed = 30;
  int motorBSpeed = 30;
  int errorScaleFactor = 1;
@@ -5761,7 +5779,7 @@ void doOperation(){
  int tiresToDrop = 0;
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
-    int timeInOperation = 15000;
+    unsigned long timeInOperation = 150000;
     int motorAStartDistance = motorADistance;
     int motorBStartDistance = motorBDistance;
 
@@ -5800,7 +5818,7 @@ void doOperation(){
 
     TRISAbits.TRISA4 = 0;
     LATAbits.LATA4 = 1;
-    int timeStart = millisecondsMeasured;
+    unsigned long timeStart = millisecondsMeasured;
     while(millisecondsMeasured < timeStart + 100){
 
     }
@@ -5817,7 +5835,7 @@ void doOperation(){
 
 
     _Bool send = 1;
-    int millisecondsMeasuredOld = 0;
+
 
 
 
@@ -5827,15 +5845,13 @@ void doOperation(){
         topLaserState = PORTBbits.RB4;
         bottomLaserStatePrev = bottomLaserState;
         bottomLaserState = PORTBbits.RB5;
-   if (millisecondsMeasured > millisecondsMeasuredOld){
-            millisecondsMeasuredOld++;
-        }
 
 
         switch (currentOperationState){
             case moveForward:
                 if (counted%100 == 0){
                 { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+                { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
                 printf("%d", millisecondsMeasured);
                 { lcdInst(0x80 | LCD_LINE3_ADDR);};
                 printf("%d", topLaserState);
@@ -5844,8 +5860,8 @@ void doOperation(){
                 { lcdInst(0x80 | LCD_LINE4_ADDR);};
                 printf("A: %d", motorADistance);
                 }
-# 727 "main.c"
-                errorCorrectedMove(30, 1, motorAStartDistance, motorBStartDistance, 0.1);
+# 743 "main.c"
+                errorCorrectedMove(goalSpeed, 1, motorAStartDistance, motorBStartDistance, 0.1);
 
                 break;
             case poleFinding:
@@ -5858,12 +5874,13 @@ void doOperation(){
 
                 tiresOnPole = tirePositioning(timeInOperation);
     { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+                { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
                 printf("TIRE DROP");
                 { lcdInst(0x80 | LCD_LINE2_ADDR);};
                 printf("%d on pole", tiresOnPole);
 
                 setMotorSpeeds(0, 1, 1, 0);
-# 753 "main.c"
+# 770 "main.c"
     sendArduinoTireDropRequest();
 
 
@@ -5886,7 +5903,6 @@ void doOperation(){
                         tiresOnPole = 0;
                         totalTiresSupplied += tiresDeployedOnPole;
                         tiresDeployedOnPole = 0;
-                        tiresDeployedOnPole = 0;
      } else {
 
       sendArduinoTireDropRequest();
@@ -5902,12 +5918,27 @@ void doOperation(){
     break;
             case leavePole:
 
-                opErrorCorrectionDegrees(30, 1, 1, 400, timeInOperation);
+                { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+                { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
+                printf("Leaving Pole");
+                int startedDistA = motorADistance;
+                int startedDistB = motorBDistance;
+
+
+
+                opErrorCorrectionDegrees(30, 1, 0.1, 3000, timeInOperation);
+                setMotorSpeeds(0, 1, 1, 0);
+                opDelay(4000, timeInOperation);
 
                 motorAStartDistance = 0;
                 motorBStartDistance = 0;
                 currentOperationState = moveForward;
 
+
+                topLaserState = PORTBbits.RB4;
+                topLaserStatePrev = PORTBbits.RB4;
+                bottomLaserState = PORTBbits.RB5;
+                bottomLaserStatePrev = PORTBbits.RB5;
 
                 break;
    case returnHome:
@@ -5916,14 +5947,16 @@ void doOperation(){
     break;
    case complete:
 
+                sendArduinoAbortOperationMessage();
                 for (int i = 0; i < 48; i++){
                     logs[0][i] = 3;
                 }
     setMotorSpeeds(0, 1, 1, 0);
                 LATAbits.LATA4 = 0;
     return;
+                break;
         }
-# 827 "main.c"
+# 860 "main.c"
   if (millisecondsMeasured >= timeInOperation){
    currentOperationState = complete;
 
@@ -6001,7 +6034,7 @@ void ee_read_byte(unsigned char address, unsigned char *_data){
     EECON1bits.RD = 1;
     *_data = EEDATA;
 }
-# 925 "main.c"
+# 958 "main.c"
 const char happynewyear[7] = {
     00,
     55,
@@ -6228,12 +6261,12 @@ void main() {
 
 
         }
-# 1159 "main.c"
+# 1192 "main.c"
         tick++;
         _delay((unsigned long)((1)*(10000000/4000.0)));
     }
 }
-# 1172 "main.c"
+# 1205 "main.c"
 void __attribute__((picinterrupt(("")))) interruptHandler(void){
 
     if(INT1IF){

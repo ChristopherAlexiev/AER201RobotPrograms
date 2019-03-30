@@ -30,7 +30,7 @@ const char keys[] = "123A456B789C*0#D";
 volatile bool keyPressed = false;
 volatile int motorADistance = 0;
 volatile int motorBDistance = 0;
-volatile int millisecondsMeasured = 0;
+volatile unsigned long millisecondsMeasured = 0;
 volatile bool topBreakBeamTriggeredChange = 0;
 volatile bool bottomBreakBeamTriggeredChange = 0;
 volatile bool motorBDirection = true;//the rotation direction of motor B
@@ -117,8 +117,8 @@ void doDisplayLog(int logNumber){
 
 //DELAY FUNCTION FOR OPERATIONS
 //a function that delays for some number of milliseconds that will exit in case the time of the operation is up
-void opDelay( int millis, int maxOperationTime){
-    int startTime = millisecondsMeasured;
+void opDelay( int millis, unsigned long maxOperationTime){
+    unsigned long startTime = millisecondsMeasured;
     while (millisecondsMeasured < maxOperationTime && (millisecondsMeasured - startTime) < millis){ 
     }
     return;
@@ -357,7 +357,10 @@ void setMotorSpeeds(int motorASpeed, bool Aforward, bool Bforward, int motorBSpe
 
 
 //this function positions the robot on the pole and  returns the number of tires on the pole
-int tirePositioning(int maxOperationTime){
+int tirePositioning(unsigned long maxOperationTime){
+    lcd_clear();
+    lcd_home();
+    printf("TIRE POSITIONING");
     int topBreakbeam;
     int bottomBreakbeam;
     int distanceRecordedTop;
@@ -497,6 +500,21 @@ void sendArduinoTireOperationStartMessage(){
     return;
 }
 
+void sendArduinoAbortOperationMessage(){
+    //unsigned char mem[3]; // Initialize array to check for triple-A sequence
+    //unsigned char counter = 0; // Increments each time a byte is sent
+    //unsigned char data; // Holds the data to be sent/received
+    
+    unsigned char data = '3'; //char 1 is to represent a tire drop request
+    
+    I2C_Master_Start(); // Start condition
+    I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
+    I2C_Master_Write(data); // Write key press data
+    I2C_Master_Stop();
+    return;
+}
+
+
 bool requestIsTireDropDone(){//send request to arduino to see if the tire drop is complete
     I2C_Master_Start();
     I2C_Master_Write(0b00010001); // 7-bit Arduino slave address + Read
@@ -581,7 +599,7 @@ void errorCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance,
 //breaks if operation time limit is reached
 //distance is in degrees
 //stops the motors after
-void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, int distanceDegrees, int maxOperationTime){
+void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, int distanceDegrees, unsigned long maxOperationTime){
     int motorAStartDistance = motorADistance;
     int motorBStartDistance = motorBDistance;
 
@@ -611,7 +629,7 @@ void doOperation(){
     TIMER_INIT();
     millisecondsMeasured = 0;
     //set variables
-	int goalSpeed = 30;
+	int goalSpeed = 20;
 	int motorASpeed = 30;
 	int motorBSpeed = 30;
 	int errorScaleFactor = 1;
@@ -624,7 +642,7 @@ void doOperation(){
 	int tiresToDrop = 0;
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
-    int timeInOperation = 15000; //length in milliseconds
+    unsigned long timeInOperation = 150000; //length in milliseconds
     int motorAStartDistance = motorADistance;//RESET TO 0 AFTER EVERY MOVEMENT
     int motorBStartDistance = motorBDistance;//RESET TO 0 AFTER EVERY MOVEMENT
 
@@ -663,7 +681,7 @@ void doOperation(){
     //TRISCbits.TRISC7 = 0;//pin for motor direction
     TRISAbits.TRISA4 = 0;//pin for disabling keypad
     LATAbits.LATA4 = 1;///disable the keypad during the operation by putting voltage to the kpd bit
-    int timeStart = millisecondsMeasured;
+    unsigned long timeStart = millisecondsMeasured;
     while(millisecondsMeasured < timeStart + 100){//wait to let the B bits settle after turning off the keypad before using break beams
      //let break beams settle   
     }
@@ -680,7 +698,7 @@ void doOperation(){
         // Main loop
 
     bool send = true;
-    int millisecondsMeasuredOld = 0;
+
     //LATCbits.LATC7 = 1;
     /*LATAbits.LATA0 = 0;
     LATAbits.LATA1 = 1;*/
@@ -690,15 +708,13 @@ void doOperation(){
         topLaserState = PORTBbits.RB4;
         bottomLaserStatePrev = bottomLaserState;
         bottomLaserState = PORTBbits.RB5;
- 		if (millisecondsMeasured > millisecondsMeasuredOld){
-            millisecondsMeasuredOld++;
-        }       
 
         //__delay_ms(1);
         switch (currentOperationState){
             case moveForward: //moving the robot to the next pole
                 if (counted%100 == 0){
-                lcd_clear();//prepare screen for next state        
+                lcd_clear();//prepare screen for next state
+                lcd_home();
                 printf("%d", millisecondsMeasured);
                 lcd_set_ddram_addr(LCD_LINE3_ADDR);
                 printf("%d", topLaserState);
@@ -724,7 +740,7 @@ void doOperation(){
                 LATAbits.LATA2 = 1;
                 LATAbits.LATA3 = 0;*/
                 //PIDCorrectedMove(goalSpeed, 1, motorAStartDistance, motorBStartDistance, 0.1, 0, 0, PIDData);
-                errorCorrectedMove(30, 1, motorAStartDistance, motorBStartDistance, 0.1);
+                errorCorrectedMove(goalSpeed, 1, motorAStartDistance, motorBStartDistance, 0.1);
                 //setMotorSpeeds(30, true, true, 30); //write new speeds to PORTC1 and PORTC2 PWM pins; 
                 break;
             case poleFinding: //finding out the number of tires on the pole and positioning the robot by the pole
@@ -736,7 +752,8 @@ void doOperation(){
                 
                 //find out the number of tires on the pole and position the robot to the pole
                 tiresOnPole = tirePositioning(timeInOperation);
-				lcd_clear();//prepare screen for next state        
+				lcd_clear();//prepare screen for next state
+                lcd_home();
                 printf("TIRE DROP");
                 lcd_set_ddram_addr(LCD_LINE2_ADDR);
                 printf("%d on pole", tiresOnPole);
@@ -772,7 +789,6 @@ void doOperation(){
                         tiresOnPole = 0;
                         totalTiresSupplied += tiresDeployedOnPole;//???? QUESTION IF THIS IS THE RIGHT ALGORITHM OR IF THIS SHOULD BE TIRES THAT MAKE IT TO POLE
                         tiresDeployedOnPole = 0;
-                        tiresDeployedOnPole = 0;
 					} else {
                         //send command to Arduino via I2C asking for a tire drop for the next tire
 						sendArduinoTireDropRequest();	
@@ -788,13 +804,28 @@ void doOperation(){
 				break;
             case leavePole:
                 //move forward a bit to leave tire without disrupting break-beams
-                opErrorCorrectionDegrees(30, 1, 1, 400, timeInOperation);//note this is a blocking function but it will return if time runs out
+                lcd_clear();
+                lcd_home();
+                printf("Leaving Pole");
+                int startedDistA = motorADistance;
+                int startedDistB = motorBDistance;
+                /*while(millisecondsMeasured < timeInOperation && abs(motorADistance - startedDistA) < 3000){
+                    errorCorrectedMove(30, 1, startedDistA, startedDistB, 0.1);
+                }*/
+                opErrorCorrectionDegrees(30, 1, 0.1, 3000, timeInOperation);
+                setMotorSpeeds(0, true, true, 0);
+                opDelay(4000, timeInOperation);        
                 //set the state to continue to next pole
                 motorAStartDistance = 0;//start distance must be reset before the next movement forward
                 motorBStartDistance = 0;
                 currentOperationState = moveForward;
                 
-                //CHECK FOR NUMBER OF POLES AND UPDATE THE NUMBER OF POLES ON THE POLE
+                //
+                topLaserState = PORTBbits.RB4;//set top laser state variable to the current state of the laser
+                topLaserStatePrev = PORTBbits.RB4;
+                bottomLaserState = PORTBbits.RB5;//set top laser state variable to the current state of the laser
+                bottomLaserStatePrev = PORTBbits.RB5;
+                
                 break;
 			case returnHome://to be worked on after evaluation
 				//returnHome();//improve
@@ -802,12 +833,14 @@ void doOperation(){
 				break;
 			case complete:
                 //FIX this should update logs constantly
+                sendArduinoAbortOperationMessage();
                 for (int i = 0; i < 48; i++){
                     logs[0][i] = 3;//index 0 means the justRan log
                 }
 				setMotorSpeeds(0, true, true, 0);
                 LATAbits.LATA4 = 0; //enable the keypad once again now that operation is over
 				return;
+                break;
         }
 		
 		//UPDATING THE STATE BELOW
