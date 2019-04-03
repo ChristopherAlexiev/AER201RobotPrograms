@@ -951,11 +951,8 @@ Version 4.0 HI-TECH Software Intermediate Code
 -> 0 `i
 ]
 "33
-[; ;main.c: 33: volatile unsigned long millisecondsMeasured = 0;
+[; ;main.c: 33: volatile unsigned long millisecondsMeasured;
 [v _millisecondsMeasured `Vul ~T0 @X0 1 e ]
-[i _millisecondsMeasured
--> -> -> 0 `i `l `ul
-]
 "34
 [; ;main.c: 34: volatile _Bool topBreakBeamTriggeredChange = 0;
 [v _topBreakBeamTriggeredChange `Va ~T0 @X0 1 e ]
@@ -1593,8 +1590,8 @@ Version 4.0 HI-TECH Software Intermediate Code
 [e :U _initSecondTimer ]
 [f ]
 "237
-[; ;main.c: 237:     millisecondsMeasured = 0;
-[e = _millisecondsMeasured -> -> -> 0 `i `l `ul ]
+[; ;main.c: 237:     millisecondsMeasured = 0ul;
+[e = _millisecondsMeasured -> 0 `ul ]
 "239
 [; ;main.c: 239:     T08BIT = 0;
 [e = _T08BIT -> -> 0 `i `b ]
@@ -1655,10 +1652,10 @@ Version 4.0 HI-TECH Software Intermediate Code
 [; ;main.c: 274:     TRISCbits.TRISC1 = 1;
 [e = . . _TRISCbits 0 1 -> -> 1 `i `uc ]
 "277
-[; ;main.c: 277:     const unsigned long FREQUENCY = 1000;
+[; ;main.c: 277:     const unsigned long FREQUENCY = 1000ul;
 [v F3284 `Cul ~T0 @X0 1 s FREQUENCY ]
 [i F3284
--> -> -> 1000 `i `l `ul
+-> 1000 `ul
 ]
 "278
 [; ;main.c: 278:     const unsigned char TIMER2_PRESCALER = 16;
@@ -2455,8 +2452,8 @@ Version 4.0 HI-TECH Software Intermediate Code
 [; ;main.c: 629:     TIMER_INIT();
 [e ( _TIMER_INIT ..  ]
 "630
-[; ;main.c: 630:     millisecondsMeasured = 0;
-[e = _millisecondsMeasured -> -> -> 0 `i `l `ul ]
+[; ;main.c: 630:     millisecondsMeasured = 30000ul;
+[e = _millisecondsMeasured -> 30000 `ul ]
 "632
 [; ;main.c: 632:  int goalSpeed = 20;
 [v _goalSpeed `i ~T0 @X0 1 a ]
@@ -2504,9 +2501,9 @@ Version 4.0 HI-TECH Software Intermediate Code
 [; ;main.c: 644:     int fourMetreEquivalent;
 [v _fourMetreEquivalent `i ~T0 @X0 1 a ]
 "645
-[; ;main.c: 645:     unsigned long timeInOperation = 150000;
+[; ;main.c: 645:     unsigned long timeInOperation = 150000ul;
 [v _timeInOperation `ul ~T0 @X0 1 a ]
-[e = _timeInOperation -> -> 150000 `l `ul ]
+[e = _timeInOperation -> 150000 `ul ]
 "646
 [; ;main.c: 646:     int motorAStartDistance = motorADistance;
 [v _motorAStartDistance `i ~T0 @X0 1 a ]
@@ -2678,7 +2675,7 @@ Version 4.0 HI-TECH Software Intermediate Code
 [e ( __delay (1 -> * -> -> 2 `i `d / -> -> 10000000 `l `d .4000.0 `ul ]
 }
 "718
-[; ;main.c: 718:                 printf("%d", millisecondsMeasured);
+[; ;main.c: 718:                 printf("%lu", millisecondsMeasured);
 [e ( _printf , (. :s 20C _millisecondsMeasured ]
 "719
 [; ;main.c: 719:                 { lcdInst(0x80 | LCD_LINE3_ADDR);};
@@ -3293,16 +3290,16 @@ Version 4.0 HI-TECH Software Intermediate Code
 [v _currentLogState `E3418 ~T0 @X0 1 a ]
 [e = _currentLogState . `E3418 1 ]
 "1051
-[; ;main.c: 1051:     unsigned long tick = 0;
+[; ;main.c: 1051:     unsigned long tick = 0ul;
 [v _tick `ul ~T0 @X0 1 a ]
-[e = _tick -> -> -> 0 `i `l `ul ]
+[e = _tick -> 0 `ul ]
 "1053
 [; ;main.c: 1053:     while(1){
 [e :U 427 ]
 {
 "1054
-[; ;main.c: 1054:             if (tick%10==0){
-[e $ ! == % _tick -> -> -> 10 `i `l `ul -> -> -> 0 `i `l `ul 429  ]
+[; ;main.c: 1054:             if (tick%10ul==0){
+[e $ ! == % _tick -> 10 `ul -> -> -> 0 `i `l `ul 429  ]
 {
 "1056
 [; ;main.c: 1056:                 I2C_Master_Start();
@@ -3865,9 +3862,10 @@ Version 4.0 HI-TECH Software Intermediate Code
 [; ;main.c: 1248: }
 [e :UE 471 ]
 }
-[p f _printf 13402244 ]
+[p f _printf 13403284 ]
 [a 30C 37 48 50 120 58 37 48 50 120 58 37 48 50 120 0 ]
 [a 29C 37 48 50 120 47 37 48 50 120 47 37 48 50 120 0 ]
+[a 20C 37 108 117 0 ]
 [a 1C 37 115 37 100 37 115 0 ]
 [a 6C 37 115 0 ]
 [a 8C 37 115 0 ]
@@ -3897,7 +3895,6 @@ Version 4.0 HI-TECH Software Intermediate Code
 [a 15C 37 115 37 100 0 ]
 [a 22C 66 58 32 37 100 0 ]
 [a 23C 65 58 32 37 100 0 ]
-[a 20C 37 100 0 ]
 [a 21C 37 100 0 ]
 [a 18C 49 60 45 32 50 45 62 32 51 77 69 78 85 0 ]
 [a 32C 40 49 41 32 83 84 65 82 84 0 ]

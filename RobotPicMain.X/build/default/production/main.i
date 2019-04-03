@@ -5234,7 +5234,7 @@ const char keys[] = "123A456B789C*0#D";
 volatile _Bool keyPressed = 0;
 volatile int motorADistance = 0;
 volatile int motorBDistance = 0;
-volatile unsigned long millisecondsMeasured = 0;
+volatile unsigned long millisecondsMeasured;
 volatile _Bool topBreakBeamTriggeredChange = 0;
 volatile _Bool bottomBreakBeamTriggeredChange = 0;
 volatile _Bool motorBDirection = 1;
@@ -5431,7 +5431,7 @@ void TIMER_INIT( void ){
 
 void initSecondTimer(){
 
-    millisecondsMeasured = 0;
+    millisecondsMeasured = 0ul;
 
     T08BIT = 0;
     T0PS2 = 1;
@@ -5471,7 +5471,7 @@ void init_motor_PWM(){
     TRISCbits.TRISC1 = 1;
 
 
-    const unsigned long FREQUENCY = 1000;
+    const unsigned long FREQUENCY = 1000ul;
     const unsigned char TIMER2_PRESCALER = 16;
     PR2 = (10000000 / (FREQUENCY * 4 * TIMER2_PRESCALER)) - 1;
 
@@ -5764,7 +5764,7 @@ void doOperation(){
 
 
     TIMER_INIT();
-    millisecondsMeasured = 0;
+    millisecondsMeasured = 30000ul;
 
  int goalSpeed = 20;
  int motorASpeed = 30;
@@ -5779,7 +5779,7 @@ void doOperation(){
  int tiresToDrop = 0;
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
-    unsigned long timeInOperation = 150000;
+    unsigned long timeInOperation = 150000ul;
     int motorAStartDistance = motorADistance;
     int motorBStartDistance = motorBDistance;
 
@@ -5852,7 +5852,7 @@ void doOperation(){
                 if (counted%100 == 0){
                 { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
                 { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
-                printf("%d", millisecondsMeasured);
+                printf("%lu", millisecondsMeasured);
                 { lcdInst(0x80 | LCD_LINE3_ADDR);};
                 printf("%d", topLaserState);
                 { lcdInst(0x80 | LCD_LINE2_ADDR);};
@@ -6128,10 +6128,10 @@ void main() {
     enum logStates {justRan,one,two,three,four};
     enum logStates currentLogState = one;
 
-    unsigned long tick = 0;
+    unsigned long tick = 0ul;
 
     while(1){
-            if (tick%10==0){
+            if (tick%10ul==0){
 
                 I2C_Master_Start();
                 I2C_Master_Write(0b11010000);

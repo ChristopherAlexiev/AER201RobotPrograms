@@ -30,7 +30,7 @@ const char keys[] = "123A456B789C*0#D";
 volatile bool keyPressed = false;
 volatile int motorADistance = 0;
 volatile int motorBDistance = 0;
-volatile unsigned long millisecondsMeasured = 0;
+volatile unsigned long millisecondsMeasured;
 volatile bool topBreakBeamTriggeredChange = 0;
 volatile bool bottomBreakBeamTriggeredChange = 0;
 volatile bool motorBDirection = true;//the rotation direction of motor B
@@ -234,7 +234,7 @@ void TIMER_INIT( void ){
 //set timer interrupt for 1 second
 void initSecondTimer(){
     //set millisecondsMeasured to zero
-    millisecondsMeasured = 0;
+    millisecondsMeasured = 0ul;
     //set timer interrupt:
     T08BIT = 0; //set to 16 bit timer
     T0PS2 = 1;//set timer to 256 prescaler
@@ -274,7 +274,7 @@ void init_motor_PWM(){
     TRISCbits.TRISC1 = 1;
      
     // Configure PWM frequency, 3.1 kHz. See datasheet pg. 149, equation 16-1
-    const unsigned long FREQUENCY = 1000;
+    const unsigned long FREQUENCY = 1000ul;
     const unsigned char TIMER2_PRESCALER = 16;
     PR2 = (_XTAL_FREQ / (FREQUENCY * 4 * TIMER2_PRESCALER)) - 1;
     
@@ -627,7 +627,7 @@ void doOperation(){
     //initSecondTimer();//start the timer so millisecondsMeasured start to get updated
     //  CLK_INIT();
     TIMER_INIT();
-    millisecondsMeasured = 0;
+    millisecondsMeasured = 30000ul;
     //set variables
 	int goalSpeed = 20;
 	int motorASpeed = 30;
@@ -642,7 +642,7 @@ void doOperation(){
 	int tiresToDrop = 0;
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
-    unsigned long timeInOperation = 150000; //length in milliseconds
+    unsigned long timeInOperation = 180000ul; //length in milliseconds
     int motorAStartDistance = motorADistance;//RESET TO 0 AFTER EVERY MOVEMENT
     int motorBStartDistance = motorBDistance;//RESET TO 0 AFTER EVERY MOVEMENT
 
@@ -715,7 +715,7 @@ void doOperation(){
                 if (counted%100 == 0){
                 lcd_clear();//prepare screen for next state
                 lcd_home();
-                printf("%d", millisecondsMeasured);
+                printf("%lu", millisecondsMeasured);
                 lcd_set_ddram_addr(LCD_LINE3_ADDR);
                 printf("%d", topLaserState);
                 lcd_set_ddram_addr(LCD_LINE2_ADDR);
@@ -1048,10 +1048,10 @@ void main() {
     enum logStates {justRan,one,two,three,four};//one is the most recent log
     enum logStates currentLogState = one; 
     
-    unsigned long tick = 0;
+    unsigned long tick = 0ul;
     //const char* msg = msg1;
     while(1){
-            if (tick%10==0){//if 1 second has passed then increase the current time
+            if (tick%10ul==0){//if 1 second has passed then increase the current time
                         // Reset RTC memory pointer
                 I2C_Master_Start(); // Start condition
                 I2C_Master_Write(0b11010000); // 7 bit RTC address + Write

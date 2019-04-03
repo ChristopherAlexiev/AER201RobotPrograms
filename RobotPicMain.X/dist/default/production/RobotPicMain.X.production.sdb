@@ -61,6 +61,8 @@ LCD_SHIFT_RIGHT 1
 [v _dtoa dtoa `(i  1 s 2 dtoa ]
 "546
 [v _stoa stoa `(i  1 s 2 stoa ]
+"593
+[v _utoa utoa `(i  1 s 2 utoa ]
 "623
 [v _xtoa xtoa `(i  1 s 2 xtoa ]
 "670
@@ -95,6 +97,10 @@ LCD_SHIFT_RIGHT 1
 [v _isupper isupper `(i  1 e 2 0 ]
 "7 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\llmod.c
 [v ___llmod __llmod `(ul  1 e 4 0 ]
+"9 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\lodiv.c
+[v ___lodiv __lodiv `(uo  1 e 8 0 ]
+"9 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\lomod.c
+[v ___lomod __lomod `(uo  1 e 8 0 ]
 "8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\nf_fputc.c
 [v _fputc fputc `(i  1 e 2 0 ]
 "8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\nf_fputs.c
@@ -111,6 +117,8 @@ LCD_SHIFT_RIGHT 1
 [v ___flmul __flmul `(d  1 e 4 0 ]
 "12 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\strlen.c
 [v _strlen strlen `(ui  1 e 2 0 ]
+"3 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\strncmp.c
+[v _strncmp strncmp `(i  1 e 2 0 ]
 "4 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\toupper.c
 [v _toupper toupper `(i  1 e 2 0 ]
 "15 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\Umul16.c
@@ -637,19 +645,19 @@ LCD_SHIFT_RIGHT 1
 [v _main main `(v  1 e 1 0 ]
 {
 "1064
-[v main@i i `uc  1 a 1 72 ]
+[v main@i i `uc  1 a 1 79 ]
 "1144
-[v main@keyValue keyValue `uc  1 a 1 75 ]
+[v main@keyValue keyValue `uc  1 a 1 82 ]
 "1143
-[v main@keypress keypress `uc  1 a 1 71 ]
+[v main@keypress keypress `uc  1 a 1 78 ]
 "1040
-[v main@time time `[7]uc  1 a 7 60 ]
+[v main@time time `[7]uc  1 a 7 67 ]
 "1051
-[v main@tick tick `ul  1 a 4 67 ]
+[v main@tick tick `ul  1 a 4 74 ]
 "1047
-[v main@currentRobotState currentRobotState `E3411  1 a 1 74 ]
+[v main@currentRobotState currentRobotState `E3411  1 a 1 81 ]
 "1049
-[v main@currentLogState currentLogState `E3418  1 a 1 73 ]
+[v main@currentLogState currentLogState `E3418  1 a 1 80 ]
 "1195
 } 0
 "983
@@ -755,25 +763,25 @@ LCD_SHIFT_RIGHT 1
 [v _tirePositioning tirePositioning `(i  1 e 2 0 ]
 {
 "409
-[v tirePositioning@startDistance startDistance `i  1 a 2 25 ]
+[v tirePositioning@startDistance startDistance `i  1 a 2 47 ]
 "365
-[v tirePositioning@bottomBreakbeam bottomBreakbeam `i  1 a 2 37 ]
+[v tirePositioning@bottomBreakbeam bottomBreakbeam `i  1 a 2 59 ]
 "364
-[v tirePositioning@topBreakbeam topBreakbeam `i  1 a 2 35 ]
+[v tirePositioning@topBreakbeam topBreakbeam `i  1 a 2 57 ]
 "368
-[v tirePositioning@distanceRecordedBottom distanceRecordedBottom `i  1 a 2 33 ]
+[v tirePositioning@distanceRecordedBottom distanceRecordedBottom `i  1 a 2 55 ]
 "366
-[v tirePositioning@distanceRecordedTop distanceRecordedTop `i  1 a 2 31 ]
+[v tirePositioning@distanceRecordedTop distanceRecordedTop `i  1 a 2 53 ]
 "371
-[v tirePositioning@bottomPreviousState bottomPreviousState `i  1 a 2 29 ]
+[v tirePositioning@bottomPreviousState bottomPreviousState `i  1 a 2 51 ]
 "370
-[v tirePositioning@topPreviousState topPreviousState `i  1 a 2 27 ]
+[v tirePositioning@topPreviousState topPreviousState `i  1 a 2 49 ]
 "369
-[v tirePositioning@startDistanceBottom startDistanceBottom `i  1 a 2 23 ]
+[v tirePositioning@startDistanceBottom startDistanceBottom `i  1 a 2 45 ]
 "367
-[v tirePositioning@startDistanceTop startDistanceTop `i  1 a 2 21 ]
+[v tirePositioning@startDistanceTop startDistanceTop `i  1 a 2 43 ]
 "360
-[v tirePositioning@maxOperationTime maxOperationTime `ul  1 p 4 14 ]
+[v tirePositioning@maxOperationTime maxOperationTime `ul  1 p 4 39 ]
 "424
 } 0
 "120
@@ -936,17 +944,17 @@ LCD_SHIFT_RIGHT 1
 "8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\sprcmul.c
 [v ___flmul __flmul `(d  1 e 4 0 ]
 {
-[s S1684 . 4 `uc 1 a 1 0 `uc 1 b 1 1 `uc 1 c 1 2 `uc 1 d 1 3 ]
+[s S1722 . 4 `uc 1 a 1 0 `uc 1 b 1 1 `uc 1 c 1 2 `uc 1 d 1 3 ]
 "13
-[s S1689 . 4 `s 1 wordA 2 0 `s 1 wordB 2 2 ]
-[u S1692 . 4 `l 1 i 4 0 `d 1 f 4 0 `S1684 1 fAsBytes 4 0 `S1689 1 fAsWords 4 0 ]
-[v ___flmul@prod prod `S1692  1 a 4 38 ]
+[s S1727 . 4 `s 1 wordA 2 0 `s 1 wordB 2 2 ]
+[u S1730 . 4 `l 1 i 4 0 `d 1 f 4 0 `S1722 1 fAsBytes 4 0 `S1727 1 fAsWords 4 0 ]
+[v ___flmul@prod prod `S1730  1 a 4 38 ]
 "12
 [v ___flmul@grs grs `ul  1 a 4 33 ]
-[s S1760 . 2 `uc 1 a 1 0 `uc 1 b 1 1 ]
+[s S1798 . 2 `uc 1 a 1 0 `uc 1 b 1 1 ]
 "14
-[u S1763 . 2 `s 1 i 2 0 `us 1 n 2 0 `S1760 1 nAsBytes 2 0 ]
-[v ___flmul@temp temp `S1763  1 a 2 42 ]
+[u S1801 . 2 `s 1 i 2 0 `us 1 n 2 0 `S1798 1 nAsBytes 2 0 ]
+[v ___flmul@temp temp `S1801  1 a 2 42 ]
 "10
 [v ___flmul@bexp bexp `uc  1 a 1 37 ]
 "11
@@ -1033,50 +1041,50 @@ LCD_SHIFT_RIGHT 1
 [v _doDisplayLog doDisplayLog `(v  1 e 1 0 ]
 {
 "84
-[v doDisplayLog@keyValue keyValue `uc  1 a 1 22 ]
+[v doDisplayLog@keyValue keyValue `uc  1 a 1 107 ]
 "83
-[v doDisplayLog@keypress keypress `uc  1 a 1 20 ]
+[v doDisplayLog@keypress keypress `uc  1 a 1 105 ]
 "49
-[v doDisplayLog@currentPole currentPole `i  1 a 2 23 ]
+[v doDisplayLog@currentPole currentPole `i  1 a 2 108 ]
 "51
-[v doDisplayLog@currentDisplayState currentDisplayState `E3250  1 a 1 21 ]
+[v doDisplayLog@currentDisplayState currentDisplayState `E3250  1 a 1 106 ]
 "43
-[v doDisplayLog@logNumber logNumber `i  1 p 2 14 ]
+[v doDisplayLog@logNumber logNumber `i  1 p 2 39 ]
 "116
 } 0
 "5 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\printf.c
 [v _printf printf `(i  1 e 2 0 ]
 {
 "8
-[v printf@ap ap `[1]*.39v  1 a 2 12 ]
+[v printf@ap ap `[1]*.39v  1 a 2 99 ]
 "5
-[v printf@fmt fmt `*.25Cuc  1 p 2 0 ]
+[v printf@fmt fmt `*.25Cuc  1 p 2 29 ]
 "13
 } 0
 "1368 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\doprnt.c
 [v _vfprintf vfprintf `(i  1 e 2 0 ]
 {
 "1371
-[v vfprintf@cfmt cfmt `*.25uc  1 a 2 114 ]
+[v vfprintf@cfmt cfmt `*.25uc  1 a 2 95 ]
 [s S1261 _IO_FILE 0 ]
 "1368
-[v vfprintf@fp fp `*.2S1261  1 p 2 108 ]
-[v vfprintf@fmt fmt `*.25Cuc  1 p 2 110 ]
-[v vfprintf@ap ap `*.39*.39v  1 p 2 112 ]
+[v vfprintf@fp fp `*.2S1261  1 p 2 23 ]
+[v vfprintf@fmt fmt `*.25Cuc  1 p 2 25 ]
+[v vfprintf@ap ap `*.39*.39v  1 p 2 27 ]
 "1382
 } 0
 "670
 [v _vfpfcnvrt vfpfcnvrt `(i  1 s 2 vfpfcnvrt ]
 {
 "675
-[v vfpfcnvrt@llu llu `uo  1 a 8 93 ]
+[v vfpfcnvrt@llu llu `uo  1 a 8 15 ]
 "674
-[v vfpfcnvrt@ll ll `o  1 a 8 85 ]
+[v vfpfcnvrt@ll ll `o  1 a 8 6 ]
 "673
-[v vfpfcnvrt@done done `i  1 a 2 103 ]
+[v vfpfcnvrt@done done `i  1 a 2 2 ]
 "672
-[v vfpfcnvrt@cp cp `*.35uc  1 a 2 101 ]
-[v vfpfcnvrt@c c `uc  1 a 1 107 ]
+[v vfpfcnvrt@cp cp `*.35uc  1 a 2 0 ]
+[v vfpfcnvrt@c c `uc  1 a 1 14 ]
 [s S1261 _IO_FILE 0 ]
 "670
 [v vfpfcnvrt@fp fp `*.2S1261  1 p 2 75 ]
@@ -1124,6 +1132,55 @@ LCD_SHIFT_RIGHT 1
 {
 [v isalpha@c c `i  1 p 2 5 ]
 "8
+} 0
+"593 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\doprnt.c
+[v _utoa utoa `(i  1 s 2 utoa ]
+{
+"596
+[v utoa@n n `uo  1 a 8 58 ]
+"595
+[v utoa@i i `i  1 a 2 66 ]
+[v utoa@w w `i  1 a 2 56 ]
+[v utoa@p p `i  1 a 2 54 ]
+[s S1261 _IO_FILE 0 ]
+"593
+[v utoa@fp fp `*.2S1261  1 p 2 36 ]
+[v utoa@d d `uo  1 p 8 38 ]
+"619
+} 0
+"9 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\lomod.c
+[v ___lomod __lomod `(uo  1 e 8 0 ]
+{
+"12
+[v ___lomod@counter counter `uc  1 a 1 21 ]
+"9
+[v ___lomod@dividend dividend `uo  1 p 8 5 ]
+[v ___lomod@divisor divisor `uo  1 p 8 13 ]
+"27
+} 0
+"9 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\lodiv.c
+[v ___lodiv __lodiv `(uo  1 e 8 0 ]
+{
+"12
+[v ___lodiv@quotient quotient `uo  1 a 8 21 ]
+"13
+[v ___lodiv@counter counter `uc  1 a 1 29 ]
+"9
+[v ___lodiv@dividend dividend `uo  1 p 8 5 ]
+[v ___lodiv@divisor divisor `uo  1 p 8 13 ]
+"32
+} 0
+"3 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\strncmp.c
+[v _strncmp strncmp `(i  1 e 2 0 ]
+{
+"5
+[v strncmp@r r `*.25Cuc  1 a 2 14 ]
+[v strncmp@l l `*.25Cuc  1 a 2 12 ]
+"3
+[v strncmp@_l _l `*.25Cuc  1 p 2 5 ]
+[v strncmp@_r _r `*.25Cuc  1 p 2 7 ]
+[v strncmp@n n `ui  1 p 2 9 ]
+"9
 } 0
 "546 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\doprnt.c
 [v _stoa stoa `(i  1 s 2 stoa ]
@@ -1234,16 +1291,16 @@ LCD_SHIFT_RIGHT 1
 [v fputs@c c `uc  1 a 1 22 ]
 "8
 [v fputs@s s `*.39Cuc  1 p 2 18 ]
-[s S1871 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
-[v fputs@fp fp `*.2S1871  1 p 2 20 ]
+[s S1909 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
+[v fputs@fp fp `*.2S1909  1 p 2 20 ]
 "19
 } 0
 "8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\nf_fputc.c
 [v _fputc fputc `(i  1 e 2 0 ]
 {
 [v fputc@c c `i  1 p 2 9 ]
-[s S1871 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
-[v fputc@fp fp `*.2S1871  1 p 2 11 ]
+[s S1909 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
+[v fputc@fp fp `*.2S1909  1 p 2 11 ]
 "21
 } 0
 "102 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\lcd.c
