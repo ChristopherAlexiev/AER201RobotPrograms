@@ -5,6 +5,8 @@
 ////////////////////////////////////
 #include <Wire.h>
 #include <Servo.h>
+#include <Stepper.h>
+
 
 ///////PIN ASSIGNMENTS//////////////
 ////////////////////////////////////
@@ -39,29 +41,49 @@ const int rotatorTwoPin = 11;
 ///////GLOBALS/////////////////////
 //////////////////////////////////
 //various constants
-const int rotatorUpValueOne = 40;//maximum value for tire rotator servo
+const int rotatorUpValueOne = 25;//maximum value for tire rotator servo                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[
 const int rotatorDownValueOne = 115;//minimum value for tire rotator servo 
 const int rotatorUpValueTwo = 100;//maximum value for tire rotator servo
 const int rotatorDownValueTwo = 10;//minimum value for tire rotator servo 
 const int clampCloseValue = 0;
 const int clampOpenValue = 100;
-const int craneStopSpeed = 95;
+const int craneStopSpeed = 94;
 const int linearStopSpeed = 95;
 const unsigned long opDelayAmount = 20;
 const int ITwoCAddress = 8;
+const int stepsPerTire = 600;
+const int stepsPerRevolution = 200;
+const int stepSpeed = 50;
+
+//note that these aren't the only speeds used; there are some magic numbers particularly for the ultrasonic sensor
+const int craneFastPort = 10;
+const int craneMediumPort = 40;
+const int craneFastStarboard = 170;
+const int craneMediumStarboard = 145;
+const int craneSlowStarboard = 110;
+const int craneSlowPort = 75;
+
+//ultrasonic distance constants
+
+const long int minPoleHeight = 14ll;
+const long int maxPoleHeight = 18ll;
+const long int minGroundHeight = 24ll;
+const long int maxGroundHeight = 28ll;
+
 
 //moving ultrasonic avg
-const int lengthAvg = 25; // note this used to be int const
+const int lengthAvg = 30; // note this used to be int const
 long movingAvgArr[lengthAvg];
 long movingAvgSum = 0;
 int currentAvgArrayIndex = 0;
 long movingAvg;
 
-//servo objects
+//Motor objects
 Servo cranePusherServo; //create crane pushing servo object
 Servo linearServo;
 Servo rotatorOne;
 Servo rotatorTwo;
+Stepper steppy(stepsPerRevolution, stepperPinOne, stepperPinTwo, stepperPinThree, stepperPinFour);
 
 //volatile variables changed in interrupt functions
 volatile bool send_to_pic = false;
@@ -73,7 +95,7 @@ volatile int tireDropRequested = false;
 volatile int doOp;//do an operation
 volatile int flapperCase = 3;//this shows the current flapper being visited; to be updated after every tire drop; 3 the first flapper to visit
 volatile int firstTimeThrough = true; // this is set to true for the start of every operation
-
+volatile bool standbyClampMove = false;
 //////INIT AND SETUP FUNCTIONS////////////////
 ///////////////////////////////////
 void initMovingAvg(){
@@ -89,6 +111,9 @@ void initMovingAvg(){
 
 
 void setup(){
+    //stepper setup
+    steppy.setSpeed(100);
+  
     //I2C setup
     Wire.begin(ITwoCAddress); // Join I2C bus with address 8
     Wire.onReceive(receiveEvent); // Called when this slave device receives a data transmission from master
@@ -144,6 +169,13 @@ long ultrasonicDistance(){
 void changeUltrasonicMovingAvg(){
     long distance = 0;
     distance = ultrasonicDistance();
+
+    //if the distance measured is an unrealistic number then do not change the moving average
+    if (distance < minPoleHeight || (distance > maxPoleHeight && distance < minGroundHeight) || distance > maxGroundHeight){
+      return;
+    }
+
+    //change the moving avg based on the distance measured
     movingAvgSum -= movingAvgArr[currentAvgArrayIndex];
     movingAvgSum += distance;
     movingAvgArr[currentAvgArrayIndex] = distance;
@@ -162,7 +194,7 @@ void lowerFlapperTwo(){//time in ms
     for (int pos = rotatorUpValueTwo; pos > rotatorDownValueTwo; pos -= 1) { // goes from 0 degrees to 180 degrees
       // in steps of 1 degree
       rotatorTwo.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(15);                       // waits 15ms for the servo to reach the position
+      delay(25);                       // waits 15ms for the servo to reach the position
       if (!doOp){
         break;
       }
@@ -188,7 +220,7 @@ void raiseFlapperTwo(){//time in ms
     for (int pos = rotatorDownValueTwo; pos < rotatorUpValueTwo; pos += 2) { // goes from 0 degrees to 180 degrees
       // in steps of 1 degree
       rotatorTwo.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(15);                       // waits 15ms for the servo to reach the position
+      delay(25);                       // waits 15ms for the servo to reach the position
       if (!doOp){
         break;
       }
@@ -203,7 +235,7 @@ void lowerFlapperOne(){//time in ms
     for (int pos = rotatorUpValueOne; pos < rotatorDownValueOne; pos += 1) { // goes from 0 degrees to 180 degrees
       // in steps of 1 degree
       rotatorOne.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(20);                       // waits 15ms for the servo to reach the position
+      delay(25);                       // waits 15ms for the servo to reach the position
       if(!doOp){
         break;
       }
@@ -313,6 +345,15 @@ void nonOpDelay(unsigned long delayLength){
   while (millis()-timerStart < delayLength && !doOp){
   }
   return;
+  
+}
+
+bool inRangeInclusive(long number, int minimum, int maximum){
+  if (number >= (long int) minimum && number <= (long int)maximum){
+    return true;
+  } else {
+    return false;
+  }
 }
 
 ////////////////MAIN LOOP///////////////////
@@ -332,7 +373,18 @@ int clampLocNeeded = 0;
 
 
 void loop(){
+  /*
+  Serial.println("STEPPY");
+          steppy.setSpeed(100);
+          steppy.step(200);
+          //steppy.step(-stepsPerTire);
+          for (int i = 0; i<10; i++){
+            //steppy.step(200);
+            //opDelay(10);
+          }
+          steppy.setSpeed(0);*/
   
+  initMovingAvg();
   
   //openClamp();
   while (true){
@@ -350,9 +402,23 @@ void loop(){
       }
       if (tireDropRequested){
         Serial.println("tire drop requested");
+        Serial.println("flapperCase: " + flapperCase);
         //reset tire drop variable
         tireDropRequested = false;
-  
+        if (flapperCase == 1){//if this is the last flapper then move all the tires over
+          Serial.println("STEPPY");
+          steppy.step(-stepsPerTire);
+          digitalWrite(stepperPinOne, LOW);
+          digitalWrite(stepperPinTwo, LOW);
+          digitalWrite(stepperPinThree, LOW);
+          digitalWrite(stepperPinFour, LOW);
+          Serial.println("DONE STEPPY");
+          //steppy.step(-stepsPerTire);
+          //for (int i = 0; i<10; i++){
+            //steppy.step(-1);
+            //opDelay(10);
+          //}
+        }
         //drop the tire
         dropTire();
         //tell PIC that tire drop is complete
@@ -360,18 +426,29 @@ void loop(){
         Serial.println("tire drop complete");
         Serial.println("Clamp location:");
         Serial.println(clampLoc);
-        opDelay(5000);
+        //opDelay(5000);
         finishedYet = true;
+ 
         Serial.println("doing part 1 reset");
+
         resetClampPartOne();
+
         Serial.println("done part 1 reset");
+
         Serial.println("starting part 2 reset");
         resetClampPartTwo();
+        
         Serial.println("done part 2 reset");
+
+
       }
     } else {
-      Serial.println("Standby");
-      standbyMode();
+      //Serial.println("Standby");
+      //rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
+      //rotatorOne.write(rotatorUpValueOne);
+      //cranePusherServo.write(180);
+      //standbyModeInterruptUltrasonicTest();
+      standbyModeInterrupt();
     }
 
   }
@@ -386,19 +463,22 @@ void loop(){
 
 /////////////OPERATION FUNCTIONS////////
 ////////////////////////////////////////
+
+//old normal standby mode using the snap switch
 void standbyMode(){
     rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
     rotatorOne.write(rotatorUpValueOne);
+    Serial.println("OFF");
+    //cranePusherServo.write(craneStopSpeed);//keep crane still
     
-    cranePusherServo.write(craneStopSpeed);//keep crane still
-
-    //cranePusherServo.write(craneStopSpeed);
+    cranePusherServo.write(craneStopSpeed);
     //initMovingAvg();
     while (digitalRead(snapActionPin) == LOW && !doOp){
     }  
     nonOpDelay(50);
-    //linearServo.write(180);
     
+    //linearServo.write(180);
+    Serial.println("RIGHT");    
     cranePusherServo.write(0);
     while (digitalRead(snapActionPin) == HIGH && !doOp){
     }
@@ -406,11 +486,13 @@ void standbyMode(){
     //linearServo.write(craneStopSpeed);
     cranePusherServo.write(craneStopSpeed);
     //initMovingAvg();
+    Serial.println("OFF");    
     while (digitalRead(snapActionPin) == LOW && !doOp){
 
     } 
     nonOpDelay(50); 
     cranePusherServo.write(180);
+        Serial.println("LEFT");    
     while (digitalRead(snapActionPin) == HIGH && !doOp){
 
     }       
@@ -419,6 +501,90 @@ void standbyMode(){
     return;
     
 }
+
+//the standby mode using the A button on the devbugger keypad
+void standbyModeInterrupt(){
+    rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
+    rotatorOne.write(rotatorUpValueOne);
+    Serial.println("OFF");
+    //cranePusherServo.write(craneStopSpeed);//keep crane still
+    
+    cranePusherServo.write(craneStopSpeed);
+    //initMovingAvg();
+    while (!standbyClampMove && !doOp){
+    }  
+    nonOpDelay(50);
+    
+    //linearServo.write(180);
+    Serial.println("RIGHT");    
+    cranePusherServo.write(60);
+    while (standbyClampMove && !doOp){
+    }
+    nonOpDelay(50);
+    //linearServo.write(craneStopSpeed);
+    cranePusherServo.write(craneStopSpeed);
+    //initMovingAvg();
+    Serial.println("OFF");    
+    while (!standbyClampMove && !doOp){
+
+    } 
+    nonOpDelay(50); 
+    cranePusherServo.write(120);
+    Serial.println("LEFT");    
+    while (standbyClampMove && !doOp){
+
+    }       
+    nonOpDelay(50); 
+    cranePusherServo.write(craneStopSpeed);
+    return;
+}
+
+
+//the standby mode using the A button on the devbugger keypad
+void standbyModeInterruptUltrasonicTest(){
+    rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
+    rotatorOne.write(rotatorUpValueOne);
+    Serial.println("OFF");
+    //cranePusherServo.write(craneStopSpeed);//keep crane still
+    
+    cranePusherServo.write(craneStopSpeed);
+    //initMovingAvg();
+    while (!standbyClampMove && !doOp){
+      changeUltrasonicMovingAvg();
+      Serial.println(movingAvg);
+    }  
+    nonOpDelay(50);
+    //linearServo.write(180);
+    Serial.println("RIGHT");    
+    cranePusherServo.write(0);
+    while (standbyClampMove && !doOp){
+          changeUltrasonicMovingAvg();
+        Serial.println(movingAvg);
+
+    }
+    nonOpDelay(50);
+    //linearServo.write(craneStopSpeed);
+    cranePusherServo.write(craneStopSpeed);
+    //initMovingAvg();
+    Serial.println("OFF");    
+    while (!standbyClampMove && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(movingAvg);
+
+    } 
+    nonOpDelay(50); 
+    cranePusherServo.write(180);
+        Serial.println("LEFT");    
+    while (standbyClampMove && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(movingAvg);
+
+    }       
+    nonOpDelay(50); 
+    cranePusherServo.write(craneStopSpeed);
+    return;
+}
+
 
 void standbyMode2(){
     rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
@@ -437,6 +603,96 @@ void standbyMode2(){
     while (digitalRead(snapActionPin) == LOW && !doOp){
     }
     nonOpDelay(50);
+    
+}
+
+void standbyMode3(){//ultrasonic testing
+
+    rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
+    rotatorOne.write(rotatorUpValueOne);
+    
+    cranePusherServo.write(craneStopSpeed);//keep crane still
+
+    //cranePusherServo.write(craneStopSpeed);
+    //initMovingAvg();
+
+    while (digitalRead(snapActionPin) == LOW && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight));
+    }  
+    nonOpDelay(50);
+    //linearServo.write(180);
+    
+    cranePusherServo.write(0);
+    while (digitalRead(snapActionPin) == HIGH && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight));
+
+    }
+    nonOpDelay(50);
+    //linearServo.write(craneStopSpeed);
+    cranePusherServo.write(craneStopSpeed);
+    //initMovingAvg();
+    while (digitalRead(snapActionPin) == LOW && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight));
+
+    } 
+    nonOpDelay(50); 
+    cranePusherServo.write(180);
+    while (digitalRead(snapActionPin) == HIGH && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight));
+
+    }       
+    nonOpDelay(50); 
+    cranePusherServo.write(craneStopSpeed);
+    return;
+    
+}
+
+void standbyMode4(){//ultrasonic testing
+
+    rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
+    rotatorOne.write(rotatorUpValueOne);
+    
+    cranePusherServo.write(craneStopSpeed);//keep crane still
+
+    //cranePusherServo.write(craneStopSpeed);
+    //initMovingAvg();
+
+    while (digitalRead(snapActionPin) == LOW && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(movingAvg);
+    }  
+    nonOpDelay(50);
+    //linearServo.write(180);
+    
+    cranePusherServo.write(0);
+    while (digitalRead(snapActionPin) == HIGH && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(movingAvg);
+
+    }
+    nonOpDelay(50);
+    //linearServo.write(craneStopSpeed);
+    cranePusherServo.write(craneStopSpeed);
+    //initMovingAvg();
+    while (digitalRead(snapActionPin) == LOW && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(movingAvg);
+
+    } 
+    nonOpDelay(50); 
+    cranePusherServo.write(180);
+    while (digitalRead(snapActionPin) == HIGH && !doOp){
+    changeUltrasonicMovingAvg();
+    Serial.println(movingAvg);
+
+    }       
+    nonOpDelay(50); 
+    cranePusherServo.write(craneStopSpeed);
+    return;
     
 }
 
@@ -461,14 +717,24 @@ void resetClampPartOne(){
 
   //position the clamp immediately to the starboard side of the correct ebump pin for the next flappercase
   if (flapperCase > clampLoc){//move to the port if clamp is to the starboard of the correct side
-    cranePusherServo.write(180);
+    cranePusherServo.write(craneFastPort);
+    Serial.println("PORT");
   } else {//move to the starboard if clamp is to the port of the correct side
-    cranePusherServo.write(0);
+    cranePusherServo.write(craneFastStarboard);
+    Serial.println("STARBOARD");
   }
 
   //travel until the correct flapper ebump is hit
   if (flapperCase == 1){
+    ///// DEBUG CODE
+    //while (digitalRead(ebumpTwoPin) == LOW && doOp);
+    //Serial.println("EBUMP ONE HIGH");
+    //cranePusherServo.write(craneStopSpeed);    
+    //opDelay(5000);
+    /////
     while(digitalRead(ebumpOnePin) == LOW && doOp);
+    
+    
   } else if (flapperCase == 2){
     while(digitalRead(ebumpTwoPin) == LOW && doOp);
   } else if (flapperCase == 3){
@@ -485,6 +751,7 @@ void resetClampPartOne(){
       while(digitalRead(ebumpOnePin) == HIGH && doOp){
         opDelay(opDelayAmount);
       }
+      
     } else if (flapperCase == 2){
       while(digitalRead(ebumpTwoPin) == HIGH && doOp){
         opDelay(opDelayAmount);
@@ -498,7 +765,7 @@ void resetClampPartOne(){
         opDelay(opDelayAmount);
       }
     }
-    cranePusherServo.write(180);
+    cranePusherServo.write(craneSlowPort);
     //now go port a bit to make sure it is on the edge of the bump
     if (flapperCase == 1){
       while(digitalRead(ebumpOnePin) == LOW && doOp);
@@ -522,7 +789,7 @@ void resetClampPartOne(){
 
 const int servoLength = 2000; //used to be 14000
 
-//this goes from the location of tire pickup to the outisde of the outermost ebump, where it will wait until a tire drop is needed
+//pick up tire then this goes from the location of tire pickup to the outisde of the outermost ebump, where it will wait until a tire drop is needed
 void resetClampPartTwo(){
   //init the servo motors
   rotatorTwo.write(rotatorUpValueTwo);//ensure flappers are raised flappers non-blocking
@@ -530,10 +797,11 @@ void resetClampPartTwo(){
   cranePusherServo.write(craneStopSpeed);//keep crane still
   if (flapperCase == 3 || flapperCase == 4){//the following cases are for if the tire is to be picked up from flappers 3 or 4
     lowerFlapperTwo(); //lower the flapper corresponding to the current flapper case
-    closeClamp(); //close the clamp
+    closeClamp(); //close the clamp 
     //move in the other direction away from the flapper all the way to the starboard-most ebump
-    cranePusherServo.write(0);
+    cranePusherServo.write(craneFastStarboard);
     while (digitalRead(ebumpOnePin) == LOW && doOp);
+
     while(digitalRead(ebumpOnePin) == HIGH && doOp){//traverse the ebump to the starboard side
       opDelay(opDelayAmount);
     }
@@ -547,7 +815,7 @@ void resetClampPartTwo(){
     //opDelay(servoLength);
     closeClamp(); //close the clamp
 
-    cranePusherServo.write(180);
+    cranePusherServo.write(craneFastPort);
     while (digitalRead(ebumpFourPin) == LOW && doOp);
     while(digitalRead(ebumpFourPin) == HIGH && doOp){//traverse the ebump to the port side
       opDelay(opDelayAmount);
@@ -601,18 +869,20 @@ bool updateClampLocStarboard(bool onBump){
 //this goes from the outermost bump pin, scans for tire with ultrasonic sensor, and then drops tire at the right location
 void dropTire(){ 
   if (flapperCase == 3 || flapperCase == 4){//the following cases are for if the tire is to be picked up from the starboard-most side
+
     //move the servo until the ultrasonic sensor sees the pole
     //the clamp should be starting from position 0, on the starboard side of ebump 1
-    cranePusherServo.write(130);
+    cranePusherServo.write(craneMediumPort);
     //opDelay(1000);//drive away from wall for the ultrasonic sensor
     initMovingAvg();
-    unsigned long startingTime = millis();
-    while (movingAvg>16 && doOp){//move until the ultrasonic sensor sees the pole
-      if (millis()-startingTime > 2000){//drive away from wall for the ultrasonic sensor for 2 seconds
+    //unsigned long startingTime = millis();
+    while (!inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight) && doOp){//move until the ultrasonic sensor sees the pole
+      /*if (millis()-startingTime > 2000){//drive away from wall for the ultrasonic sensor for 2 seconds
         changeUltrasonicMovingAvg();
-      }
+      }*/
+      changeUltrasonicMovingAvg();
       //Serial.println(movingAvg);
-      Serial.println(clampLoc);
+      Serial.println(movingAvg);
 
       ///////update the clamploc if the clamp hits the starboard side of one of the ebump pins
       if (digitalRead(ebumpOnePin) == HIGH){
@@ -627,26 +897,139 @@ void dropTire(){
       /////ending the updating of clamploc
     }
 
+    //now reverse a bit to align well with the pole
+    cranePusherServo.write(craneSlowStarboard);
+    bool passedTire = false;
+    bool leaveLoop = false;
+    bool onBump = false;
+    while (!leaveLoop && doOp){//move until the ultrasonic sensor sees the pole
+      changeUltrasonicMovingAvg();
+      //Serial.println(clampLoc);
+      Serial.println(movingAvg);
+      
+      ////update the clamploc if the clamp hits the starboard side of one of the ebump pins    
+      onBump = updateClampLocStarboard(onBump);
+      /////end of the updating of clamploc
+
+      //check whether to end loop
+      if (inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight)){
+        passedTire = true;
+      } 
+      if (passedTire && inRangeInclusive(movingAvg, minGroundHeight, maxGroundHeight)){
+        leaveLoop = true;
+      }
+    }
+
+
     
   } else {//if flapper is 1 or 2
     //the clamp should start in clamploc 4, port of the starboard side of ebump 4
     //move the crane starboardwards until the ultrasonic sensor sees the pole
-    cranePusherServo.write(60);
+    cranePusherServo.write(craneMediumStarboard);
     //delay(2000);//pass over the non-outermost ebump and away from wall
     bool onBump = false;
     initMovingAvg();
-    unsigned long startingTime =millis();
-    while (movingAvg>16 && doOp){//move until the ultrasonic sensor sees the pole
-      if (millis()-startingTime > 0){//drive away from wall for the ultrasonic sensor for 0 seconds
+    unsigned long startingTime;//this variable is used for debounding after the ultrasonic sensor first sees the pole
+    bool passedTire = false;
+    bool leaveLoop = false;
+    while (!leaveLoop && doOp){//move until the ultrasonic sensor sees the pole
+      /*if ( ){//drive away from wall for the ultrasonic sensor for 0 seconds
         changeUltrasonicMovingAvg();
-      }
-      Serial.println(clampLoc);
-      //Serial.println(movingAvg);
+      }*/
+      changeUltrasonicMovingAvg();
+      //Serial.println(clampLoc);
+      
           
       ////update the clamploc if the clamp hits the starboard side of one of the ebump pins    
       onBump = updateClampLocStarboard(onBump);
       /////end of the updating of clamploc
+
+      //check whether to end loop
+      if (!passedTire && inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight)){
+        passedTire = true;
+        startingTime = millis();
+      } 
+      if (passedTire && inRangeInclusive(movingAvg,minGroundHeight,maxGroundHeight)){
+        Serial.println(millis() - startingTime);
+      } 
+      //Serial.println(movingAvg);
+      if (passedTire){
+        Serial.println("PASSED");
+      }
+      if (passedTire && inRangeInclusive(movingAvg, minGroundHeight, maxGroundHeight) && millis() - startingTime > 150){
+        leaveLoop = true;
+        Serial.println("TIME:");
+        Serial.println(millis()-startingTime);
+      }
     }
+    //cranePusherServo.write(craneStopSpeed);
+    //opDelay(5000);
+
+    //now reverse a bit to go to the right position
+    cranePusherServo.write(craneMediumPort);
+    //opDelay(1000);//drive away from wall for the ultrasonic sensor
+    startingTime = millis();
+    while (!inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight) && doOp){//move until the ultrasonic sensor sees the pole
+      //if (millis()-startingTime > 2000){//drive away from wall for the ultrasonic sensor for 2 seconds
+      //  changeUltrasonicMovingAvg();
+      //}
+      changeUltrasonicMovingAvg();
+      //Serial.println(movingAvg);
+      Serial.println(movingAvg);
+
+      ///////update the clamploc if the clamp hits the starboard side of one of the ebump pins
+      if (digitalRead(ebumpOnePin) == HIGH){
+        clampLoc = 1;
+      } else if (digitalRead(ebumpTwoPin) == HIGH){
+        clampLoc = 2;
+      } else if (digitalRead(ebumpThreePin) == HIGH){
+        clampLoc = 3;
+      } else if (digitalRead(ebumpFourPin) == HIGH){
+        clampLoc = 4;
+      }
+      /////ending the updating of clamploc
+    }    
+    //now re-reverse a bit to align well with the pole
+    cranePusherServo.write(craneSlowStarboard);
+    passedTire = false;
+    leaveLoop = false;
+    onBump = false;
+    while (!leaveLoop && doOp){//move until the ultrasonic sensor sees the pole
+      changeUltrasonicMovingAvg();
+      //Serial.println(clampLoc);
+      Serial.println(movingAvg);
+      
+      ////update the clamploc if the clamp hits the starboard side of one of the ebump pins    
+      onBump = updateClampLocStarboard(onBump);
+      /////end of the updating of clamploc
+
+      //check whether to end loop
+      if (inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight)){
+        passedTire = true;
+      } 
+      if (passedTire && inRangeInclusive(movingAvg, minGroundHeight, maxGroundHeight)){
+        leaveLoop = true;
+      }
+    }
+    //cranePusherServo.write(180);
+    //go portwards a bit to be at the right position
+    /*while (!inRangeInclusive(movingAvg,minPoleHeight,maxPoleHeight) && doOp){//move until the ultrasonic sensor sees the pole
+      //Serial.println(movingAvg);
+      //Serial.println(clampLoc);
+
+      ///////update the clamploc if the clamp hits the starboard side of one of the ebump pins
+      if (digitalRead(ebumpOnePin) == HIGH){
+        clampLoc = 1;
+      } else if (digitalRead(ebumpTwoPin) == HIGH){
+        clampLoc = 2;
+      } else if (digitalRead(ebumpThreePin) == HIGH){
+        clampLoc = 3;
+      } else if (digitalRead(ebumpFourPin) == HIGH){
+        clampLoc = 4;
+      }
+      /////ending the updating of clamploc
+    }*/
+    
   }
   
   //the pole has been found so now drop the tire
@@ -666,7 +1049,7 @@ void receiveEvent(void){
     static uint8_t counter = 0;
     */
     uint8_t x = Wire.read(); // Receive byte
-    //Serial.println((char)x); // Print to serial output as char (ASCII representation)
+    Serial.println((char)x); // Print to serial output as char (ASCII representation)
     if (x == '1'){
        tireDropRequested = true;
        finishedYet = false;
@@ -675,6 +1058,9 @@ void receiveEvent(void){
       doOp = true;
     } else if (x == '3'){ // this is to signify the end of an operation... aka the operation is aborted or time is up
       doOp = false; 
+      standbyClampMove = false;//make sure the clamp stays still after the operation
+    } else if (x == 'A'){
+      standbyClampMove = !standbyClampMove;
     }
     /*
     buf[counter++] = x;
