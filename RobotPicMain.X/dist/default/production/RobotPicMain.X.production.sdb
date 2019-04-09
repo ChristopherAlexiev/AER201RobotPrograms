@@ -3,13 +3,13 @@
 [d edition pro ]
 [d chip 18F4620 ]
 [d frameptr 4065 ]
-"51 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"53 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [e E3250 displayStates `uc
 opTime 0
 pole 1
 ]
-"639
-[e E3355 operationStates `uc
+"724
+[e E3372 operationStates `uc
 moveForward 0
 poleFinding 1
 tireDrop 2
@@ -18,16 +18,16 @@ returnHome 4
 complete 5
 leavePole 6
 ]
-"1047
-[e E3411 robotStates `uc
+"1147
+[e E3430 robotStates `uc
 standby 0
 operation 1
 operationComplete 2
 selectLog 3
 displayLog 4
 ]
-"1049
-[e E3418 logStates `uc
+"1149
+[e E3437 logStates `uc
 justRan 0
 one 1
 two 2
@@ -49,8 +49,6 @@ LCD_SHIFT_RIGHT 1
 [v ___aomod __aomod `(o  1 e 8 0 ]
 "4 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\atoi.c
 [v _atoi atoi `(i  1 e 2 0 ]
-"7 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\awdiv.c
-[v ___awdiv __awdiv `(i  1 e 2 0 ]
 "7 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\awmod.c
 [v ___awmod __awmod `(i  1 e 2 0 ]
 "72 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\doprnt.c
@@ -153,51 +151,53 @@ LCD_SHIFT_RIGHT 1
 [v _initLCD initLCD `(v  1 e 1 0 ]
 "102
 [v _putch putch `(v  1 e 1 0 ]
-"43 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"45 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _doDisplayLog doDisplayLog `(v  1 e 1 0 ]
-"120
+"122
 [v _opDelay opDelay `(v  1 e 1 0 ]
-"149
+"151
 [v _updateMotorBEncoder updateMotorBEncoder `(v  1 e 1 0 ]
-"180
+"182
 [v _updateMotorAEncoder updateMotorAEncoder `(v  1 e 1 0 ]
-"190
+"192
 [v _EncoderInit EncoderInit `(v  1 e 1 0 ]
-"218
+"220
 [v _TIMER_INIT TIMER_INIT `(v  1 e 1 0 ]
-"265
+"267
 [v _init_motor_PWM init_motor_PWM `(v  1 e 1 0 ]
-"308
+"310
 [v _set_pwm_duty_cycle set_pwm_duty_cycle `(v  1 e 1 0 ]
-"338
+"340
 [v _setMotorSpeeds setMotorSpeeds `(v  1 e 1 0 ]
-"360
+"362
 [v _tirePositioning tirePositioning `(i  1 e 2 0 ]
-"430
+"444
 [v _sendArduinoTireDropRequest sendArduinoTireDropRequest `(v  1 e 1 0 ]
-"489
-[v _sendArduinoTireOperationStartMessage sendArduinoTireOperationStartMessage `(v  1 e 1 0 ]
 "503
+[v _sendArduinoStandbyClampRequest sendArduinoStandbyClampRequest `(v  1 e 1 0 ]
+"517
+[v _sendArduinoTireOperationStartMessage sendArduinoTireOperationStartMessage `(v  1 e 1 0 ]
+"560
 [v _sendArduinoAbortOperationMessage sendArduinoAbortOperationMessage `(v  1 e 1 0 ]
-"518
-[v _requestIsTireDropDone requestIsTireDropDone `(a  1 e 1 0 ]
 "575
+[v _requestIsTireDropDone requestIsTireDropDone `(a  1 e 1 0 ]
+"632
 [v _errorCorrectedMove errorCorrectedMove `(v  1 e 1 0 ]
-"602
+"686
 [v _opErrorCorrectionDegrees opErrorCorrectionDegrees `(v  1 e 1 0 ]
-"615
+"699
 [v _doOperation doOperation `(v  1 e 1 0 ]
-"911
+"1011
 [v _ee_write_byte ee_write_byte `(v  1 e 1 0 ]
-"930
+"1030
 [v _ee_read_byte ee_read_byte `(v  1 e 1 0 ]
-"983
+"1083
 [v _robotInit robotInit `(v  1 e 1 0 ]
-"1029
+"1129
 [v _replaceOldLog replaceOldLog `(v  1 e 1 0 ]
-"1036
+"1136
 [v _main main `(v  1 e 1 0 ]
-"1205
+"1308
 [v _interruptHandler interruptHandler `IIH(v  1 e 1 0 ]
 "189 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\include\pic18f4620.h
 [v _PORTB PORTB `VEuc  1 e 1 @3969 ]
@@ -339,7 +339,7 @@ LCD_SHIFT_RIGHT 1
 [v _LATB LATB `VEuc  1 e 1 @3978 ]
 "1216
 [v _LATD LATD `VEuc  1 e 1 @3980 ]
-[s S1078 . 1 `uc 1 LATD0 1 0 :1:0 
+[s S1101 . 1 `uc 1 LATD0 1 0 :1:0 
 `uc 1 LATD1 1 0 :1:1 
 `uc 1 LATD2 1 0 :1:2 
 `uc 1 LATD3 1 0 :1:3 
@@ -349,7 +349,7 @@ LCD_SHIFT_RIGHT 1
 `uc 1 LATD7 1 0 :1:7 
 ]
 "1243
-[s S1087 . 1 `uc 1 LD0 1 0 :1:0 
+[s S1110 . 1 `uc 1 LD0 1 0 :1:0 
 `uc 1 LD1 1 0 :1:1 
 `uc 1 LD2 1 0 :1:2 
 `uc 1 LD3 1 0 :1:3 
@@ -358,8 +358,8 @@ LCD_SHIFT_RIGHT 1
 `uc 1 LD6 1 0 :1:6 
 `uc 1 LD7 1 0 :1:7 
 ]
-[u S1096 . 1 `S1078 1 . 1 0 `S1087 1 . 1 0 ]
-[v _LATDbits LATDbits `VES1096  1 e 1 @3980 ]
+[u S1119 . 1 `S1101 1 . 1 0 `S1110 1 . 1 0 ]
+[v _LATDbits LATDbits `VES1119  1 e 1 @3980 ]
 [s S603 . 1 `uc 1 TRISA0 1 0 :1:0 
 `uc 1 TRISA1 1 0 :1:1 
 `uc 1 TRISA2 1 0 :1:2 
@@ -448,7 +448,7 @@ LCD_SHIFT_RIGHT 1
 [v _ADCON1 ADCON1 `VEuc  1 e 1 @4033 ]
 "4669
 [v _SSPCON2 SSPCON2 `VEuc  1 e 1 @4037 ]
-[s S1213 . 1 `uc 1 SEN 1 0 :1:0 
+[s S1236 . 1 `uc 1 SEN 1 0 :1:0 
 `uc 1 RSEN 1 0 :1:1 
 `uc 1 PEN 1 0 :1:2 
 `uc 1 RCEN 1 0 :1:3 
@@ -458,24 +458,24 @@ LCD_SHIFT_RIGHT 1
 `uc 1 GCEN 1 0 :1:7 
 ]
 "4686
-[u S1222 . 1 `S1213 1 . 1 0 ]
-[v _SSPCON2bits SSPCON2bits `VES1222  1 e 1 @4037 ]
+[u S1245 . 1 `S1236 1 . 1 0 ]
+[v _SSPCON2bits SSPCON2bits `VES1245  1 e 1 @4037 ]
 "4731
 [v _SSPCON1 SSPCON1 `VEuc  1 e 1 @4038 ]
-[s S1163 . 1 `uc 1 SSPM 1 0 :4:0 
+[s S1186 . 1 `uc 1 SSPM 1 0 :4:0 
 `uc 1 CKP 1 0 :1:4 
 `uc 1 SSPEN 1 0 :1:5 
 `uc 1 SSPOV 1 0 :1:6 
 `uc 1 WCOL 1 0 :1:7 
 ]
 "4751
-[s S1169 . 1 `uc 1 SSPM0 1 0 :1:0 
+[s S1192 . 1 `uc 1 SSPM0 1 0 :1:0 
 `uc 1 SSPM1 1 0 :1:1 
 `uc 1 SSPM2 1 0 :1:2 
 `uc 1 SSPM3 1 0 :1:3 
 ]
-[u S1174 . 1 `S1163 1 . 1 0 `S1169 1 . 1 0 ]
-[v _SSPCON1bits SSPCON1bits `VES1174  1 e 1 @4038 ]
+[u S1197 . 1 `S1186 1 . 1 0 `S1192 1 . 1 0 ]
+[v _SSPCON1bits SSPCON1bits `VES1197  1 e 1 @4038 ]
 "4801
 [v _SSPSTAT SSPSTAT `VEuc  1 e 1 @4039 ]
 "5022
@@ -615,55 +615,60 @@ LCD_SHIFT_RIGHT 1
 [v _dbuf dbuf `[32]uc  1 s 32 dbuf ]
 "69
 [v _nout nout `i  1 s 2 nout ]
-"20 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"22 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _logs logs `[5][48]i  1 e 480 0 ]
-"25
+"27
 [v _keys keys `C[17]uc  1 e 17 0 ]
-"30
-[v _keyPressed keyPressed `VEa  1 e 1 0 ]
-"31
-[v _motorADistance motorADistance `VEi  1 e 2 0 ]
 "32
-[v _motorBDistance motorBDistance `VEi  1 e 2 0 ]
+[v _keyPressed keyPressed `VEa  1 e 1 0 ]
 "33
-[v _millisecondsMeasured millisecondsMeasured `VEul  1 e 4 0 ]
+[v _motorADistance motorADistance `VEl  1 e 4 0 ]
 "34
-[v _topBreakBeamTriggeredChange topBreakBeamTriggeredChange `VEa  1 e 1 0 ]
+[v _motorBDistance motorBDistance `VEl  1 e 4 0 ]
 "35
-[v _bottomBreakBeamTriggeredChange bottomBreakBeamTriggeredChange `VEa  1 e 1 0 ]
+[v _millisecondsMeasured millisecondsMeasured `VEul  1 e 4 0 ]
 "36
-[v _motorBDirection motorBDirection `VEa  1 e 1 0 ]
+[v _topBreakBeamTriggeredChange topBreakBeamTriggeredChange `VEa  1 e 1 0 ]
 "37
-[v _motorADirection motorADirection `VEa  1 e 1 0 ]
+[v _bottomBreakBeamTriggeredChange bottomBreakBeamTriggeredChange `VEa  1 e 1 0 ]
 "38
-[v _encoderBInterruptLast encoderBInterruptLast `VEa  1 e 1 0 ]
+[v _motorBDirection motorBDirection `VEa  1 e 1 0 ]
 "39
+[v _motorADirection motorADirection `VEa  1 e 1 0 ]
+"40
+[v _encoderBInterruptLast encoderBInterruptLast `VEa  1 e 1 0 ]
+"41
 [v _encoderAInterruptLast encoderAInterruptLast `VEa  1 e 1 0 ]
-"958
+"1058
 [v _happynewyear happynewyear `C[7]uc  1 e 7 0 ]
-"1036
+"1136
 [v _main main `(v  1 e 1 0 ]
 {
-"1064
-[v main@i i `uc  1 a 1 79 ]
-"1144
-[v main@keyValue keyValue `uc  1 a 1 82 ]
-"1143
-[v main@keypress keypress `uc  1 a 1 78 ]
-"1040
-[v main@time time `[7]uc  1 a 7 67 ]
-"1051
-[v main@tick tick `ul  1 a 4 74 ]
-"1047
-[v main@currentRobotState currentRobotState `E3411  1 a 1 81 ]
-"1049
-[v main@currentLogState currentLogState `E3418  1 a 1 80 ]
-"1195
+"1165
+[v main@i i `uc  1 a 1 83 ]
+"1245
+[v main@keyValue keyValue `uc  1 a 1 86 ]
+"1244
+[v main@keypress keypress `uc  1 a 1 82 ]
+"1140
+[v main@time time `[7]uc  1 a 7 71 ]
+"1151
+[v main@tick tick `ul  1 a 4 78 ]
+"1147
+[v main@currentRobotState currentRobotState `E3430  1 a 1 85 ]
+"1149
+[v main@currentLogState currentLogState `E3437  1 a 1 84 ]
+"1298
 } 0
-"983
+"503
+[v _sendArduinoStandbyClampRequest sendArduinoStandbyClampRequest `(v  1 e 1 0 ]
+{
+"515
+} 0
+"1083
 [v _robotInit robotInit `(v  1 e 1 0 ]
 {
-"1027
+"1127
 } 0
 "69 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\lcd.c
 [v _initLCD initLCD `(v  1 e 1 0 ]
@@ -688,146 +693,133 @@ LCD_SHIFT_RIGHT 1
 [v ___lldiv@divisor divisor `ul  1 p 4 9 ]
 "30
 } 0
-"190 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"192 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _EncoderInit EncoderInit `(v  1 e 1 0 ]
 {
-"204
+"206
 } 0
-"1029
+"1129
 [v _replaceOldLog replaceOldLog `(v  1 e 1 0 ]
 {
-"1030
+"1130
 [v replaceOldLog@i i `i  1 a 2 5 ]
-"1034
+"1134
 } 0
-"615
+"699
 [v _doOperation doOperation `(v  1 e 1 0 ]
 {
-"837
-[v doOperation@i i `i  1 a 2 58 ]
-"811
-[v doOperation@startedDistB startedDistB `i  1 a 2 22 ]
-"810
-[v doOperation@startedDistA startedDistA `i  1 a 2 20 ]
-"645
-[v doOperation@timeInOperation timeInOperation `ul  1 a 4 60 ]
-"684
-[v doOperation@timeStart timeStart `ul  1 a 4 35 ]
-"649
-[v doOperation@PIDData PIDData `[2]i  1 a 4 0 ]
-"664
-[v doOperation@tiresOnPole tiresOnPole `i  1 a 2 54 ]
-"662
-[v doOperation@tiresDeployedOnPole tiresDeployedOnPole `i  1 a 2 52 ]
-"642
-[v doOperation@tiresToDrop tiresToDrop `i  1 a 2 50 ]
-"668
-[v doOperation@distanceToPole distanceToPole `i  1 a 2 48 ]
-"656
-[v doOperation@counted counted `i  1 a 2 46 ]
-"647
-[v doOperation@motorBStartDistance motorBStartDistance `i  1 a 2 44 ]
-"646
-[v doOperation@motorAStartDistance motorAStartDistance `i  1 a 2 42 ]
-"632
-[v doOperation@goalSpeed goalSpeed `i  1 a 2 39 ]
-"669
-[v doOperation@distanceFromLastPole distanceFromLastPole `i  1 a 2 33 ]
-"666
-[v doOperation@totalTiresSupplied totalTiresSupplied `i  1 a 2 31 ]
-"661
-[v doOperation@poleNumber poleNumber `i  1 a 2 29 ]
-"658
-[v doOperation@badCountBot badCountBot `i  1 a 2 27 ]
-"657
-[v doOperation@badCount badCount `i  1 a 2 25 ]
-"663
-[v doOperation@tiresOnPoleAfterOp tiresOnPoleAfterOp `i  1 a 2 18 ]
-"650
-[v doOperation@topLaserState topLaserState `a  1 a 1 66 ]
-"652
-[v doOperation@bottomLaserState bottomLaserState `a  1 a 1 65 ]
-"639
-[v doOperation@currentOperationState currentOperationState `E3355  1 a 1 64 ]
-"653
-[v doOperation@bottomLaserStatePrev bottomLaserStatePrev `a  1 a 1 57 ]
-"651
-[v doOperation@topLaserStatePrev topLaserStatePrev `a  1 a 1 56 ]
-"654
-[v doOperation@isDoneDrop isDoneDrop `a  1 a 1 41 ]
-"700
-[v doOperation@send send `a  1 a 1 24 ]
-"901
+"937
+[v doOperation@i i `i  1 a 2 84 ]
+"905
+[v doOperation@startedDistB startedDistB `l  1 a 4 12 ]
+"904
+[v doOperation@startedDistA startedDistA `l  1 a 4 8 ]
+"736
+[v doOperation@PIDData PIDData `[2]l  1 a 8 0 ]
+"730
+[v doOperation@timeInOperation timeInOperation `ul  1 a 4 80 ]
+"731
+[v doOperation@motorAStartDistance motorAStartDistance `l  1 a 4 74 ]
+"755
+[v doOperation@distanceToPole distanceToPole `l  1 a 4 61 ]
+"732
+[v doOperation@motorBStartDistance motorBStartDistance `l  1 a 4 57 ]
+"771
+[v doOperation@timeStart timeStart `ul  1 a 4 53 ]
+"756
+[v doOperation@distanceFromLastPole distanceFromLastPole `l  1 a 4 40 ]
+"733
+[v doOperation@motorStartTime motorStartTime `ul  1 a 4 36 ]
+"751
+[v doOperation@tiresOnPole tiresOnPole `i  1 a 2 72 ]
+"749
+[v doOperation@tiresDeployedOnPole tiresDeployedOnPole `i  1 a 2 70 ]
+"727
+[v doOperation@tiresToDrop tiresToDrop `i  1 a 2 68 ]
+"743
+[v doOperation@counted counted `i  1 a 2 66 ]
+"753
+[v doOperation@totalTiresSupplied totalTiresSupplied `i  1 a 2 51 ]
+"748
+[v doOperation@poleNumber poleNumber `i  1 a 2 49 ]
+"745
+[v doOperation@badCountBot badCountBot `i  1 a 2 47 ]
+"744
+[v doOperation@badCount badCount `i  1 a 2 45 ]
+"750
+[v doOperation@tiresOnPoleAfterOp tiresOnPoleAfterOp `i  1 a 2 34 ]
+"734
+[v doOperation@accelerationDelay accelerationDelay `i  1 a 2 32 ]
+"737
+[v doOperation@topLaserState topLaserState `a  1 a 1 88 ]
+"739
+[v doOperation@bottomLaserState bottomLaserState `a  1 a 1 87 ]
+"724
+[v doOperation@currentOperationState currentOperationState `E3372  1 a 1 86 ]
+"740
+[v doOperation@bottomLaserStatePrev bottomLaserStatePrev `a  1 a 1 79 ]
+"738
+[v doOperation@topLaserStatePrev topLaserStatePrev `a  1 a 1 78 ]
+"741
+[v doOperation@isDoneDrop isDoneDrop `a  1 a 1 65 ]
+"787
+[v doOperation@send send `a  1 a 1 44 ]
+"1001
 } 0
-"360
+"362
 [v _tirePositioning tirePositioning `(i  1 e 2 0 ]
 {
-"409
-[v tirePositioning@startDistance startDistance `i  1 a 2 47 ]
-"365
-[v tirePositioning@bottomBreakbeam bottomBreakbeam `i  1 a 2 59 ]
-"364
-[v tirePositioning@topBreakbeam topBreakbeam `i  1 a 2 57 ]
 "368
-[v tirePositioning@distanceRecordedBottom distanceRecordedBottom `i  1 a 2 55 ]
-"366
-[v tirePositioning@distanceRecordedTop distanceRecordedTop `i  1 a 2 53 ]
-"371
-[v tirePositioning@bottomPreviousState bottomPreviousState `i  1 a 2 51 ]
+[v tirePositioning@distanceRecordedTop distanceRecordedTop `l  1 a 4 28 ]
 "370
-[v tirePositioning@topPreviousState topPreviousState `i  1 a 2 49 ]
+[v tirePositioning@distanceRecordedBottom distanceRecordedBottom `l  1 a 4 24 ]
+"371
+[v tirePositioning@startDistanceBottom startDistanceBottom `l  1 a 4 16 ]
 "369
-[v tirePositioning@startDistanceBottom startDistanceBottom `i  1 a 2 45 ]
+[v tirePositioning@startDistanceTop startDistanceTop `l  1 a 4 12 ]
 "367
-[v tirePositioning@startDistanceTop startDistanceTop `i  1 a 2 43 ]
-"360
-[v tirePositioning@maxOperationTime maxOperationTime `ul  1 p 4 39 ]
-"424
+[v tirePositioning@bottomBreakbeam bottomBreakbeam `i  1 a 2 34 ]
+"366
+[v tirePositioning@topBreakbeam topBreakbeam `i  1 a 2 32 ]
+"373
+[v tirePositioning@bottomPreviousState bottomPreviousState `i  1 a 2 22 ]
+"372
+[v tirePositioning@topPreviousState topPreviousState `i  1 a 2 20 ]
+"362
+[v tirePositioning@maxOperationTime maxOperationTime `ul  1 p 4 8 ]
+"438
 } 0
-"120
+"122
 [v _opDelay opDelay `(v  1 e 1 0 ]
 {
-"121
+"123
 [v opDelay@startTime startTime `ul  1 a 4 19 ]
-"120
+"122
 [v opDelay@millis millis `i  1 p 2 5 ]
 [v opDelay@maxOperationTime maxOperationTime `ul  1 p 4 7 ]
-"125
+"127
 } 0
-"7 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\awdiv.c
-[v ___awdiv __awdiv `(i  1 e 2 0 ]
-{
-"10
-[v ___awdiv@quotient quotient `i  1 a 2 11 ]
-"11
-[v ___awdiv@sign sign `uc  1 a 1 10 ]
-[v ___awdiv@counter counter `uc  1 a 1 9 ]
-"7
-[v ___awdiv@dividend dividend `i  1 p 2 5 ]
-[v ___awdiv@divisor divisor `i  1 p 2 7 ]
-"41
-} 0
-"489 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"517
 [v _sendArduinoTireOperationStartMessage sendArduinoTireOperationStartMessage `(v  1 e 1 0 ]
+{
+"529
+} 0
+"444
+[v _sendArduinoTireDropRequest sendArduinoTireDropRequest `(v  1 e 1 0 ]
 {
 "501
 } 0
-"430
-[v _sendArduinoTireDropRequest sendArduinoTireDropRequest `(v  1 e 1 0 ]
-{
-"487
-} 0
-"503
+"560
 [v _sendArduinoAbortOperationMessage sendArduinoAbortOperationMessage `(v  1 e 1 0 ]
 {
-"515
+"572
 } 0
-"518
+"575
 [v _requestIsTireDropDone requestIsTireDropDone `(a  1 e 1 0 ]
 {
-"521
+"578
 [v requestIsTireDropDone@data data `uc  1 a 1 8 ]
-"527
+"584
 } 0
 "70 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\I2C.c
 [v _I2C_Master_Write I2C_Master_Write `(v  1 e 1 0 ]
@@ -861,60 +853,60 @@ LCD_SHIFT_RIGHT 1
 {
 "29
 } 0
-"602 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"686 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _opErrorCorrectionDegrees opErrorCorrectionDegrees `(v  1 e 1 0 ]
 {
-"603
-[v opErrorCorrectionDegrees@motorAStartDistance motorAStartDistance `i  1 a 2 52 ]
-"604
-[v opErrorCorrectionDegrees@motorBStartDistance motorBStartDistance `i  1 a 2 50 ]
-"602
-[v opErrorCorrectionDegrees@goalSpeed goalSpeed `i  1 p 2 32 ]
-[v opErrorCorrectionDegrees@turnRatio turnRatio `i  1 p 2 34 ]
-[v opErrorCorrectionDegrees@correctionConstant correctionConstant `f  1 p 4 36 ]
-[v opErrorCorrectionDegrees@distanceDegrees distanceDegrees `i  1 p 2 40 ]
-[v opErrorCorrectionDegrees@maxOperationTime maxOperationTime `ul  1 p 4 42 ]
-"612
+"687
+[v opErrorCorrectionDegrees@motorAStartDistance motorAStartDistance `l  1 a 4 63 ]
+"688
+[v opErrorCorrectionDegrees@motorBStartDistance motorBStartDistance `l  1 a 4 55 ]
+"686
+[v opErrorCorrectionDegrees@goalSpeed goalSpeed `i  1 p 2 34 ]
+[v opErrorCorrectionDegrees@turnRatio turnRatio `i  1 p 2 36 ]
+[v opErrorCorrectionDegrees@correctionConstant correctionConstant `f  1 p 4 38 ]
+[v opErrorCorrectionDegrees@distanceDegrees distanceDegrees `l  1 p 4 42 ]
+[v opErrorCorrectionDegrees@maxOperationTime maxOperationTime `ul  1 p 4 46 ]
+"696
 } 0
-"575
+"632
 [v _errorCorrectedMove errorCorrectedMove `(v  1 e 1 0 ]
 {
-"578
-[v errorCorrectedMove@BSpeed BSpeed `i  1 a 2 30 ]
-"577
-[v errorCorrectedMove@ASpeed ASpeed `i  1 a 2 28 ]
-"576
-[v errorCorrectedMove@error error `i  1 a 2 26 ]
-"575
+"633
+[v errorCorrectedMove@error error `l  1 a 4 26 ]
+"635
+[v errorCorrectedMove@BSpeed BSpeed `i  1 a 2 32 ]
+"634
+[v errorCorrectedMove@ASpeed ASpeed `i  1 a 2 30 ]
+"632
 [v errorCorrectedMove@goalSpeed goalSpeed `i  1 p 2 8 ]
 [v errorCorrectedMove@turnRatio turnRatio `f  1 p 4 10 ]
-[v errorCorrectedMove@motorAStartDistance motorAStartDistance `i  1 p 2 14 ]
-[v errorCorrectedMove@motorBStartDistance motorBStartDistance `i  1 p 2 16 ]
-[v errorCorrectedMove@correctionConstant correctionConstant `f  1 p 4 18 ]
-"595
+[v errorCorrectedMove@motorAStartDistance motorAStartDistance `l  1 p 4 14 ]
+[v errorCorrectedMove@motorBStartDistance motorBStartDistance `l  1 p 4 18 ]
+[v errorCorrectedMove@correctionConstant correctionConstant `f  1 p 4 22 ]
+"652
 } 0
-"338
+"340
 [v _setMotorSpeeds setMotorSpeeds `(v  1 e 1 0 ]
 {
 [v setMotorSpeeds@motorASpeed motorASpeed `i  1 p 2 107 ]
 [v setMotorSpeeds@Aforward Aforward `a  1 p 1 109 ]
 [v setMotorSpeeds@Bforward Bforward `a  1 p 1 110 ]
 [v setMotorSpeeds@motorBSpeed motorBSpeed `i  1 p 2 111 ]
-"356
+"358
 } 0
-"308
+"310
 [v _set_pwm_duty_cycle set_pwm_duty_cycle `(v  1 e 1 0 ]
 {
-"321
+"323
 [v set_pwm_duty_cycle@duty_valB duty_valB `us  1 a 2 101 ]
-"320
+"322
 [v set_pwm_duty_cycle@duty_valA duty_valA `us  1 a 2 99 ]
-"314
+"316
 [v set_pwm_duty_cycle@max_duty_val max_duty_val `us  1 a 2 97 ]
-"308
+"310
 [v set_pwm_duty_cycle@dutyA dutyA `f  1 p 4 87 ]
 [v set_pwm_duty_cycle@dutyB dutyB `f  1 p 4 91 ]
-"336
+"338
 } 0
 "10 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\xxtofl.c
 [v ___xxtofl __xxtofl `(d  1 e 4 0 ]
@@ -944,17 +936,17 @@ LCD_SHIFT_RIGHT 1
 "8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\sprcmul.c
 [v ___flmul __flmul `(d  1 e 4 0 ]
 {
-[s S1722 . 4 `uc 1 a 1 0 `uc 1 b 1 1 `uc 1 c 1 2 `uc 1 d 1 3 ]
+[s S1745 . 4 `uc 1 a 1 0 `uc 1 b 1 1 `uc 1 c 1 2 `uc 1 d 1 3 ]
 "13
-[s S1727 . 4 `s 1 wordA 2 0 `s 1 wordB 2 2 ]
-[u S1730 . 4 `l 1 i 4 0 `d 1 f 4 0 `S1722 1 fAsBytes 4 0 `S1727 1 fAsWords 4 0 ]
-[v ___flmul@prod prod `S1730  1 a 4 38 ]
+[s S1750 . 4 `s 1 wordA 2 0 `s 1 wordB 2 2 ]
+[u S1753 . 4 `l 1 i 4 0 `d 1 f 4 0 `S1745 1 fAsBytes 4 0 `S1750 1 fAsWords 4 0 ]
+[v ___flmul@prod prod `S1753  1 a 4 38 ]
 "12
 [v ___flmul@grs grs `ul  1 a 4 33 ]
-[s S1798 . 2 `uc 1 a 1 0 `uc 1 b 1 1 ]
+[s S1821 . 2 `uc 1 a 1 0 `uc 1 b 1 1 ]
 "14
-[u S1801 . 2 `s 1 i 2 0 `us 1 n 2 0 `S1798 1 nAsBytes 2 0 ]
-[v ___flmul@temp temp `S1801  1 a 2 42 ]
+[u S1824 . 2 `s 1 i 2 0 `us 1 n 2 0 `S1821 1 nAsBytes 2 0 ]
+[v ___flmul@temp temp `S1824  1 a 2 42 ]
 "10
 [v ___flmul@bexp bexp `uc  1 a 1 37 ]
 "11
@@ -1016,10 +1008,10 @@ LCD_SHIFT_RIGHT 1
 [v ___fladd@a a `d  1 p 4 48 ]
 "237
 } 0
-"265 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"267 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _init_motor_PWM init_motor_PWM `(v  1 e 1 0 ]
 {
-"306
+"308
 } 0
 "7 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\awmod.c
 [v ___awmod __awmod `(i  1 e 2 0 ]
@@ -1032,25 +1024,25 @@ LCD_SHIFT_RIGHT 1
 [v ___awmod@divisor divisor `i  1 p 2 7 ]
 "34
 } 0
-"218 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"220 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _TIMER_INIT TIMER_INIT `(v  1 e 1 0 ]
 {
-"231
+"233
 } 0
-"43
+"45
 [v _doDisplayLog doDisplayLog `(v  1 e 1 0 ]
 {
-"84
+"86
 [v doDisplayLog@keyValue keyValue `uc  1 a 1 107 ]
-"83
+"85
 [v doDisplayLog@keypress keypress `uc  1 a 1 105 ]
-"49
-[v doDisplayLog@currentPole currentPole `i  1 a 2 108 ]
 "51
+[v doDisplayLog@currentPole currentPole `i  1 a 2 108 ]
+"53
 [v doDisplayLog@currentDisplayState currentDisplayState `E3250  1 a 1 106 ]
-"43
+"45
 [v doDisplayLog@logNumber logNumber `i  1 p 2 39 ]
-"116
+"118
 } 0
 "5 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\printf.c
 [v _printf printf `(i  1 e 2 0 ]
@@ -1066,9 +1058,9 @@ LCD_SHIFT_RIGHT 1
 {
 "1371
 [v vfprintf@cfmt cfmt `*.25uc  1 a 2 95 ]
-[s S1261 _IO_FILE 0 ]
+[s S1284 _IO_FILE 0 ]
 "1368
-[v vfprintf@fp fp `*.2S1261  1 p 2 23 ]
+[v vfprintf@fp fp `*.2S1284  1 p 2 23 ]
 [v vfprintf@fmt fmt `*.25Cuc  1 p 2 25 ]
 [v vfprintf@ap ap `*.39*.39v  1 p 2 27 ]
 "1382
@@ -1085,9 +1077,9 @@ LCD_SHIFT_RIGHT 1
 "672
 [v vfpfcnvrt@cp cp `*.35uc  1 a 2 0 ]
 [v vfpfcnvrt@c c `uc  1 a 1 14 ]
-[s S1261 _IO_FILE 0 ]
+[s S1284 _IO_FILE 0 ]
 "670
-[v vfpfcnvrt@fp fp `*.2S1261  1 p 2 75 ]
+[v vfpfcnvrt@fp fp `*.2S1284  1 p 2 75 ]
 [v vfpfcnvrt@fmt fmt `*.39*.25uc  1 p 2 77 ]
 [v vfpfcnvrt@ap ap `*.39*.39v  1 p 2 79 ]
 "1365
@@ -1102,9 +1094,9 @@ LCD_SHIFT_RIGHT 1
 [v xtoa@i i `i  1 a 2 71 ]
 [v xtoa@w w `i  1 a 2 61 ]
 [v xtoa@p p `i  1 a 2 59 ]
-[s S1261 _IO_FILE 0 ]
+[s S1284 _IO_FILE 0 ]
 "623
-[v xtoa@fp fp `*.2S1261  1 p 2 36 ]
+[v xtoa@fp fp `*.2S1284  1 p 2 36 ]
 [v xtoa@d d `uo  1 p 8 38 ]
 [v xtoa@x x `uc  1 p 1 46 ]
 "665
@@ -1142,9 +1134,9 @@ LCD_SHIFT_RIGHT 1
 [v utoa@i i `i  1 a 2 66 ]
 [v utoa@w w `i  1 a 2 56 ]
 [v utoa@p p `i  1 a 2 54 ]
-[s S1261 _IO_FILE 0 ]
+[s S1284 _IO_FILE 0 ]
 "593
-[v utoa@fp fp `*.2S1261  1 p 2 36 ]
+[v utoa@fp fp `*.2S1284  1 p 2 36 ]
 [v utoa@d d `uo  1 p 8 38 ]
 "619
 } 0
@@ -1195,9 +1187,9 @@ LCD_SHIFT_RIGHT 1
 "549
 [v stoa@w w `i  1 a 2 32 ]
 [v stoa@i i `i  1 a 2 30 ]
-[s S1261 _IO_FILE 0 ]
+[s S1284 _IO_FILE 0 ]
 "546
-[v stoa@fp fp `*.2S1261  1 p 2 18 ]
+[v stoa@fp fp `*.2S1284  1 p 2 18 ]
 [v stoa@s s `*.35uc  1 p 2 20 ]
 "548
 [v stoa@F1144 F1144 `[7]uc  1 s 7 F1144 ]
@@ -1213,9 +1205,9 @@ LCD_SHIFT_RIGHT 1
 [v dtoa@s s `i  1 a 2 60 ]
 [v dtoa@w w `i  1 a 2 58 ]
 [v dtoa@p p `i  1 a 2 56 ]
-[s S1261 _IO_FILE 0 ]
+[s S1284 _IO_FILE 0 ]
 "274
-[v dtoa@fp fp `*.2S1261  1 p 2 36 ]
+[v dtoa@fp fp `*.2S1284  1 p 2 36 ]
 [v dtoa@d d `o  1 p 8 38 ]
 "315
 } 0
@@ -1254,9 +1246,9 @@ LCD_SHIFT_RIGHT 1
 {
 "261
 [v ctoa@w w `i  1 a 2 39 ]
-[s S1261 _IO_FILE 0 ]
+[s S1284 _IO_FILE 0 ]
 "259
-[v ctoa@fp fp `*.2S1261  1 p 2 36 ]
+[v ctoa@fp fp `*.2S1284  1 p 2 36 ]
 [v ctoa@c c `uc  1 p 1 38 ]
 "270
 } 0
@@ -1266,9 +1258,9 @@ LCD_SHIFT_RIGHT 1
 "74
 [v pad@w w `i  1 a 2 34 ]
 [v pad@i i `i  1 a 2 32 ]
-[s S1261 _IO_FILE 0 ]
+[s S1284 _IO_FILE 0 ]
 "72
-[v pad@fp fp `*.2S1261  1 p 2 25 ]
+[v pad@fp fp `*.2S1284  1 p 2 25 ]
 [v pad@buf buf `*.39uc  1 p 2 27 ]
 [v pad@p p `i  1 p 2 29 ]
 "95
@@ -1291,16 +1283,16 @@ LCD_SHIFT_RIGHT 1
 [v fputs@c c `uc  1 a 1 22 ]
 "8
 [v fputs@s s `*.39Cuc  1 p 2 18 ]
-[s S1909 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
-[v fputs@fp fp `*.2S1909  1 p 2 20 ]
+[s S1932 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
+[v fputs@fp fp `*.2S1932  1 p 2 20 ]
 "19
 } 0
 "8 C:\Program Files (x86)\Microchip\xc8\v2.05\pic\sources\c99\common\nf_fputc.c
 [v _fputc fputc `(i  1 e 2 0 ]
 {
 [v fputc@c c `i  1 p 2 9 ]
-[s S1909 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
-[v fputc@fp fp `*.2S1909  1 p 2 11 ]
+[s S1932 _IO_FILE 6 `*.2uc 1 buffer 2 0 `i 1 count 2 2 `i 1 limit 2 4 ]
+[v fputc@fp fp `*.2S1932  1 p 2 11 ]
 "21
 } 0
 "102 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\lcd.c
@@ -1386,26 +1378,26 @@ LCD_SHIFT_RIGHT 1
 [v ___llmod@divisor divisor `ul  1 p 4 9 ]
 "25
 } 0
-"1205 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
+"1308 C:\Users\chris\Programming Stuffs\GitHub Saved\AER201\FinalRobotPrograms\RobotPicMain.X\main.c
 [v _interruptHandler interruptHandler `IIH(v  1 e 1 0 ]
 {
-"1228
+"1331
 } 0
-"149
+"151
 [v _updateMotorBEncoder updateMotorBEncoder `(v  1 e 1 0 ]
 {
-"151
+"153
 [v updateMotorBEncoder@directionPin directionPin `i  1 a 2 3 ]
-"150
+"152
 [v updateMotorBEncoder@interruptPinState interruptPinState `i  1 a 2 1 ]
-"157
+"159
 } 0
-"180
+"182
 [v _updateMotorAEncoder updateMotorAEncoder `(v  1 e 1 0 ]
 {
-"182
+"184
 [v updateMotorAEncoder@directionPin directionPin `i  1 a 2 3 ]
-"181
+"183
 [v updateMotorAEncoder@interruptPinState interruptPinState `i  1 a 2 1 ]
-"188
+"190
 } 0

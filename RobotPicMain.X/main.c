@@ -7,6 +7,8 @@
  * @pre Co-processor is running default keypad encoder program
  */
 
+//ACTUAL MAIN PROGRAM
+
 #include "xc.h"
 #include <math.h>
 #include <stdio.h>
@@ -28,8 +30,8 @@ const char keys[] = "123A456B789C*0#D";
 
 //Global variable used in interrupts
 volatile bool keyPressed = false;
-volatile int motorADistance = 0;
-volatile int motorBDistance = 0;
+volatile long motorADistance = 0ll;
+volatile long motorBDistance = 0ll;
 volatile unsigned long millisecondsMeasured;
 volatile bool topBreakBeamTriggeredChange = 0;
 volatile bool bottomBreakBeamTriggeredChange = 0;
@@ -150,9 +152,9 @@ void updateMotorBEncoder(){
   int interruptPinState = PORTBbits.RB2;//the interrupt pin for motor B
   int directionPin = PORTCbits.RC0;//the direction input from the encoder
   if(directionPin == interruptPinState){
-    motorBDistance++;
-  } else {
     motorBDistance--;
+  } else {
+    motorBDistance++;
   }
 }
 
@@ -181,9 +183,9 @@ void updateMotorAEncoder(){
   int interruptPinState = PORTBbits.RB0;//the interrupt pin for motor B
   int directionPin = PORTEbits.RE1;//the direction input from the encoder
   if(directionPin == interruptPinState){
-    motorADistance--;
-  } else {
     motorADistance++;
+  } else {
+    motorADistance--;
   }
 }
 
@@ -360,13 +362,13 @@ void setMotorSpeeds(int motorASpeed, bool Aforward, bool Bforward, int motorBSpe
 int tirePositioning(unsigned long maxOperationTime){
     lcd_clear();
     lcd_home();
-    printf("TIRE POSITIONING");
+    //printf("TIRE POSITIONING");
     int topBreakbeam;
     int bottomBreakbeam;
-    int distanceRecordedTop;
-    int startDistanceTop;
-    int distanceRecordedBottom;
-    int startDistanceBottom;
+    long distanceRecordedTop;
+    long startDistanceTop;
+    long distanceRecordedBottom;
+    long startDistanceBottom;
     int topPreviousState = 1; //assume the break beam was high before the function started.
     int bottomPreviousState = 1;//assume the break beam was high before the function started
     
@@ -392,34 +394,46 @@ int tirePositioning(unsigned long maxOperationTime){
         topPreviousState = topBreakbeam;
         bottomPreviousState = bottomBreakbeam;
     }
-    /////position the robot so that the tire dropping mechanism is on top of the poles
-    if (distanceRecordedTop < 170){// if there is no top tire then go until the pole is hit by the top break beam
+    
+    //DEBUG
+    //setMotorSpeeds( 0, true, true, 0);    
+    //lcd_clear();//prepare screen for next state
+                //lcd_home();
+                //printf("Top %ld", distanceRecordedTop);
+                //lcd_set_ddram_addr(LCD_LINE3_ADDR);
+                //printf("Bottom %ld", distanceRecordedBottom);
+    ///
+
+                /////position the robot so that the tire dropping mechanism is on top of the poles
+    if (distanceRecordedTop < 80){// if there is no top tire then go until the pole is hit by the top break beam in preparation for dropping tire
         setMotorSpeeds(0, true, true, 0);
         opDelay(100, maxOperationTime);
         while(millisecondsMeasured < maxOperationTime && PORTBbits.RB4 == 1){
-            setMotorSpeeds(30, false, false, 30);
+            setMotorSpeeds(90, false, false, 90);
         }
         setMotorSpeeds(0, true, true, 0);
-    } else {//if there is a top tire then go backwards until the bottom tire is detected and then halfway through it
+    } /*else {//if there is a top tire then go backwards until the bottom tire is detected and then halfway through it
+        
+        //IRRELEVANT
         setMotorSpeeds(0, true, true, 0);        
         opDelay(100, maxOperationTime);
         while(millisecondsMeasured < maxOperationTime && PORTBbits.RB4 == 1){
-            setMotorSpeeds(30, false, false, 30);
+            setMotorSpeeds(90, false, false, 90);
         }
-        int startDistance = motorADistance;
+        long startDistance = motorADistance;
         while(millisecondsMeasured < maxOperationTime && abs(startDistance - motorADistance) < distanceRecordedBottom/2){
-            setMotorSpeeds(30, false, false, 30);
+            setMotorSpeeds(90, false, false, 90);
         }
         setMotorSpeeds(0, true, true, 0);
-    }
+    }*/
     
     /////return the correct number of tires that were on the pole
-    if (distanceRecordedTop  < 170 && distanceRecordedBottom < 170){ // if there are no tires on the pole, typically the pole width is about 130
+    if (distanceRecordedTop  < 80 && distanceRecordedBottom < 80){ // if there are no tires on the pole, typically the pole width is about 130
         return 0;
-    } else if (abs(distanceRecordedTop - distanceRecordedBottom) > 180){ //the breakbeam separation for if there is one tire is about 300 encoder units
-        return 1; //one tire is on the pole if there is a big difference between the two break beam distances
+    } else if (distanceRecordedTop  > 80 && distanceRecordedBottom > 80){ //the breakbeam separation for if there is one tire is about 300 encoder units
+        return 2;         //two tires are on the pole if there is a small difference between the two break beam distances
     } else {
-        return 2;//two tires are on the pole if there is a small difference between the two break beam distances
+        return 1;//one tire is on the pole if there is a big difference between the two break beam distances
     }
 }
 /*
@@ -486,6 +500,20 @@ void sendArduinoTireDropRequest(){
     return;
 }
 
+void sendArduinoStandbyClampRequest(){
+    //unsigned char mem[3]; // Initialize array to check for triple-A sequence
+    //unsigned char counter = 0; // Increments each time a byte is sent
+    //unsigned char data; // Holds the data to be sent/received
+    
+    unsigned char data = 'A'; //char 1 is to represent a tire drop request
+    
+    I2C_Master_Start(); // Start condition
+    I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
+    I2C_Master_Write(data); // Write key press data
+    I2C_Master_Stop();
+    return;    
+}
+
 void sendArduinoTireOperationStartMessage(){
     //unsigned char mem[3]; // Initialize array to check for triple-A sequence
     //unsigned char counter = 0; // Increments each time a byte is sent
@@ -497,6 +525,35 @@ void sendArduinoTireOperationStartMessage(){
     I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
     I2C_Master_Write(data); // Write key press data
     I2C_Master_Stop();
+    return;
+}
+
+void sendArduinoLogs(){
+    //unsigned char mem[3]; // Initialize array to check for triple-A sequence
+    //unsigned char counter = 0; // Increments each time a byte is sent
+    //unsigned char data; // Holds the data to be sent/received
+            int bigNum = 32001;
+            unsigned char a = (char)((bigNum >> 8) & 0xFF);
+            unsigned char b = (char)(bigNum & 0xFF);
+            I2C_Master_Start(); // Start condition
+            I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
+            I2C_Master_Write(a); // Write key press data
+            I2C_Master_Write(b); // Write key press data
+            
+            //I2C_Master_Write(data2); // Write key press data
+            I2C_Master_Stop();
+
+    /*for (int i = 0; i++; i < 4){
+        for (int i = 0; i++; i < 48){
+            unsigned char data1 = '2'; //char 1 is to represent a tire drop request
+            I2C_Master_Start(); // Start condition
+            I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
+            I2C_Master_Write(data1); // Write key press data
+            I2C_Master_Stop();
+
+        }        
+    }
+    */
     return;
 }
 
@@ -542,11 +599,11 @@ checkForPolesInWay(int* leftPole, int* rightPole){
 //non-blocking error corrected PID speed setting
 //turn ratio is greater than 1 for motor B going fast
 //derivative data is an array that holds the last error [0] and the integral [1]
-void PIDCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, int motorBStartDistance, float kp, float kd, float ki, int * derivativeData){
-    int error = (int)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/turnRatio);
-    int derivative = error - derivativeData[0];
+void PIDCorrectedMove(int goalSpeed, float turnRatio, long motorAStartDistance, long motorBStartDistance, float kp, float kd, float ki, long * derivativeData){
+    long error = (long)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/(double)turnRatio);
+    long derivative = error - derivativeData[0];
     derivativeData[0] = error;
-    int integral = derivativeData[1] + error;
+    long integral = derivativeData[1] + error;
     int correctionTerm = (int)(error*kp + derivative*kd + integral*ki);
     int ASpeed = goalSpeed - correctionTerm;
     int BSpeed = (int)((goalSpeed*turnRatio + correctionTerm));
@@ -572,10 +629,10 @@ void PIDCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, i
 
 //non-blocking error corrected speed setting
 //turn ratio is greater than 1 for motor B going fast
-void errorCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, int motorBStartDistance, float correctionConstant){
-    int error = (int)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/turnRatio);
+void errorCorrectedMove(int goalSpeed, float turnRatio, long motorAStartDistance, long motorBStartDistance, float correctionConstant){
+    long error = (long)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/(double)turnRatio);
     int ASpeed = (int)(goalSpeed - error*correctionConstant);
-    int BSpeed = (int)((goalSpeed*turnRatio + error*correctionConstant));
+    int BSpeed = (int)(goalSpeed*turnRatio + error*correctionConstant);
     
     if (ASpeed > 100){
         ASpeed = 100;
@@ -594,14 +651,41 @@ void errorCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance,
     return;
 }
 
+void errorCorrectedMoveAccelerate(int goalSpeed, int accelerationPerS, unsigned long startTime, float turnRatio, long motorAStartDistance, long motorBStartDistance, float correctionConstant){
+    unsigned long accelSpeed = (unsigned long)((millisecondsMeasured - startTime)*(accelerationPerS/(float)1000));
+    if (accelSpeed < goalSpeed){
+        goalSpeed = (int)accelSpeed;
+    }
+    long error = (long)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/(double)turnRatio);
+    int ASpeed = (int)(goalSpeed - error*correctionConstant);
+    int BSpeed = (int)(goalSpeed*turnRatio + error*correctionConstant);
+    
+    if (ASpeed > 100){
+        ASpeed = 100;
+    } 
+    if (ASpeed < 0){
+        ASpeed = 0;
+    }
+    if (BSpeed > 100){
+        BSpeed = 100;
+    }
+    if (BSpeed < 0){
+        BSpeed = 0;
+    }
+    
+    setMotorSpeeds(ASpeed , true, true, BSpeed);
+    return;
+}
+
+
 //function to drive forward for some number of degrees 
 //meant to be used in doOperation
 //breaks if operation time limit is reached
 //distance is in degrees
 //stops the motors after
-void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, int distanceDegrees, unsigned long maxOperationTime){
-    int motorAStartDistance = motorADistance;
-    int motorBStartDistance = motorBDistance;
+void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, long distanceDegrees, unsigned long maxOperationTime){
+    long motorAStartDistance = motorADistance;
+    long motorBStartDistance = motorBDistance;
 
     //change the startDistance after every movement in dooperation
     
@@ -613,6 +697,7 @@ void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionCons
 
 
 void doOperation(){
+    
     // Write the address of the slave device, that is, the Arduino Nano. Note
     // that the Arduino Nano must be configured to be running as a slave with
     // the same address given here. Note that other addresses can be used if
@@ -629,7 +714,7 @@ void doOperation(){
     TIMER_INIT();
     millisecondsMeasured = 30000ul;
     //set variables
-	int goalSpeed = 20;
+	int goalSpeed = 30;
 	int motorASpeed = 30;
 	int motorBSpeed = 30;
 	int errorScaleFactor = 1;
@@ -643,10 +728,12 @@ void doOperation(){
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
     unsigned long timeInOperation = 180000ul; //length in milliseconds
-    int motorAStartDistance = motorADistance;//RESET TO 0 AFTER EVERY MOVEMENT
-    int motorBStartDistance = motorBDistance;//RESET TO 0 AFTER EVERY MOVEMENT
+    long motorAStartDistance = motorADistance;//RESET TO 0 AFTER EVERY MOVEMENT
+    long motorBStartDistance = motorBDistance;//RESET TO 0 AFTER EVERY MOVEMENT
+    unsigned long motorStartTime = millisecondsMeasured; //RESET AFTER EVERY MOVEMENT
+    int accelerationDelay = 0;
 
-    int PIDData[2] = {0,0};//this is the last error and the integral in one data structure, RESET TO {0,0} after every movement;
+    long PIDData[2] = {0,0};//this is the last error and the integral in one data structure, RESET TO {0,0} after every movement;
     bool topLaserState;
     bool topLaserStatePrev;
     bool bottomLaserState;
@@ -665,12 +752,12 @@ void doOperation(){
     
     int totalTiresSupplied = 0;
 
-    int distanceToPole = 0;
-    int distanceFromLastPole = 0;
+    long distanceToPole = 0ll;
+    long distanceFromLastPole = 0ll;
 
     
     //NOTE...
-    //MAKE SURE TO RESET PIDData, motorAStartDistancte, and motorBStartDistance before movements
+    //MAKE SURE TO RESET PIDData, motorAStartDistancte, and motorBStartDistance, motorStarTime before movements
     
     //initialize pins for operation
     TRISAbits.TRISA0 = 0;//pin for motor A direction
@@ -702,13 +789,14 @@ void doOperation(){
     //LATCbits.LATC7 = 1;
     /*LATAbits.LATA0 = 0;
     LATAbits.LATA1 = 1;*/
+
     while (1){
         counted ++;
         topLaserStatePrev = topLaserState;
         topLaserState = PORTBbits.RB4;
         bottomLaserStatePrev = bottomLaserState;
         bottomLaserState = PORTBbits.RB5;
-
+        
         //__delay_ms(1);
         switch (currentOperationState){
             case moveForward: //moving the robot to the next pole
@@ -731,7 +819,7 @@ void doOperation(){
                 TRISCbits.TRISC2 = 0;
                 TRISCbits.TRISC1 = 0;
                 
-                LATCbits.LATC1 = 1;
+                LATCbits.LATC1 = 1;0
                 LATCbits.LATC2 = 1;
                 
                 LATAbits.LATA2 = 0;
@@ -740,7 +828,13 @@ void doOperation(){
                 LATAbits.LATA2 = 1;
                 LATAbits.LATA3 = 0;*/
                 //PIDCorrectedMove(goalSpeed, 1, motorAStartDistance, motorBStartDistance, 0.1, 0, 0, PIDData);
-                errorCorrectedMove(goalSpeed, 1, motorAStartDistance, motorBStartDistance, 0.1);
+                //setMotorSpeeds(80,true,true,80);
+                //errorCorrectedMoveAccelerate(90, 30, motorStartTime, 1, motorAStartDistance, motorBStartDistance, 0.1);
+                errorCorrectedMove(90, 1, motorAStartDistance, motorBStartDistance, 0.4);
+                
+                if(motorADistance - motorAStartDistance > 30000){
+                    currentOperationState = complete;
+                }
                 //setMotorSpeeds(30, true, true, 30); //write new speeds to PORTC1 and PORTC2 PWM pins; 
                 break;
             case poleFinding: //finding out the number of tires on the pole and positioning the robot by the pole
@@ -807,17 +901,21 @@ void doOperation(){
                 lcd_clear();
                 lcd_home();
                 printf("Leaving Pole");
-                int startedDistA = motorADistance;
-                int startedDistB = motorBDistance;
+                long startedDistA = motorADistance;
+                long startedDistB = motorBDistance;
                 /*while(millisecondsMeasured < timeInOperation && abs(motorADistance - startedDistA) < 3000){
                     errorCorrectedMove(30, 1, startedDistA, startedDistB, 0.1);
                 }*/
-                opErrorCorrectionDegrees(30, 1, 0.1, 3000, timeInOperation);
-                setMotorSpeeds(0, true, true, 0);
-                opDelay(4000, timeInOperation);        
+                opErrorCorrectionDegrees(90, 1, 0.1, 180, timeInOperation);
+                //setMotorSpeeds(0, true, true, 0);
+                //lcd_clear();
+                //lcd_home();
+                //printf("Done");
+                //opDelay(4000, timeInOperation);
                 //set the state to continue to next pole
-                motorAStartDistance = 0;//start distance must be reset before the next movement forward
-                motorBStartDistance = 0;
+                motorAStartDistance = 0ll;//start distance must be reset before the next movement forward
+                motorBStartDistance = 0ll;
+                motorStartTime = millisecondsMeasured;
                 currentOperationState = moveForward;
                 
                 //
@@ -832,12 +930,14 @@ void doOperation(){
 				currentOperationState = complete;
 				break;
 			case complete:
+                setMotorSpeeds(0, true, true, 0);
+                
                 //FIX this should update logs constantly
                 sendArduinoAbortOperationMessage();
                 for (int i = 0; i < 48; i++){
                     logs[0][i] = 3;//index 0 means the justRan log
                 }
-				setMotorSpeeds(0, true, true, 0);
+				
                 LATAbits.LATA4 = 0; //enable the keypad once again now that operation is over
 				return;
                 break;
@@ -1049,6 +1149,7 @@ void main() {
     enum logStates currentLogState = one; 
     
     unsigned long tick = 0ul;
+    //sendArduinoLogs();
     //const char* msg = msg1;
     while(1){
             if (tick%10ul==0){//if 1 second has passed then increase the current time
@@ -1149,7 +1250,9 @@ void main() {
                         currentRobotState = operation;
                     } else if (keyValue == '2'){
                         currentRobotState = selectLog;
-                    } 
+                    } else if (keyValue == 'A'){
+                        sendArduinoStandbyClampRequest();
+                    }
                     break;
                 case operation:
                     break;
@@ -1229,20 +1332,44 @@ void __interrupt() interruptHandler(void){
 
 void mainEEPROM(void){
     robotInit();
-        lcd_clear();
+    lcd_clear();
     lcd_home();
-    char save_me = 'x';
+    
+    //int logsB[5][48];
+    
+    
+    int bigNum = 32001;
+    unsigned char a = (char)((bigNum >> 8) & 0xFF);
+    unsigned char b = (char)(bigNum & 0xFF);
+    
     char from_eeprom;
 
     //initUsart();
-     robotInit();
-    printf("EEPROM-Demon");
-    ee_read_byte(0x00, &from_eeprom);
-    printf("read: %cn", from_eeprom);
+    robotInit();
     
-    ee_write_byte(0x00, &save_me);
-    printf("wrote: %cn", save_me);
+    ee_write_byte(0x00, &a);
+    printf("wrote: %c", a);
+    lcd_set_ddram_addr(LCD_LINE2_ADDR);
     
-    ee_read_byte(0x00, &from_eeprom);
-    printf("read: %cnn", from_eeprom);
+    ee_write_byte(0x01, &b);
+    printf("wrote: %c", b);
+    lcd_set_ddram_addr(LCD_LINE3_ADDR);
+    
+    ee_read_byte(0x00, &a);
+    printf("read: %c", a);
+    lcd_set_ddram_addr(LCD_LINE4_ADDR);
+    
+    ee_read_byte(0x01, &b);
+    printf("read: %c", b);
+
+    __delay_ms(5000);
+    
+    int bigNum2 = a;
+    bigNum2 = (bigNum2 << 8) | b ;
+    
+    lcd_clear();
+    lcd_home();
+    printf("%d",bigNum2);
+    __delay_ms(5000);
+    
 }
