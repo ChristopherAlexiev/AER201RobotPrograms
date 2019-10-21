@@ -1,7 +1,6 @@
 /**
  * keypad and LCD code credit to  Michael Ding and Tyler Gamvrelis
  * 
-
  * Preconditions:
  * @pre Character LCD in a PIC socket
  * @pre Co-processor is running default keypad encoder program
@@ -27,6 +26,8 @@ int logs[5][48];//five logs(four saved and one current), with 48 info pieces per
 const char keys[] = "123A456B789C*0#D";
 //const char msg1[] = "Standby";
 //const char msg2[] = "Operation";
+
+const int clicksPerM = 1770;//encoder clicks per metre
 
 //Global variable used in interrupts
 volatile bool keyPressed = false;
@@ -66,11 +67,12 @@ void doDisplayLog(int logNumber){
                 break;
             case pole:
                 lcd_home();
-                printf("%s%d%s%d", "POLE ", currentPole,"/", logs[logNumber][2]);//FIX LATER
+                printf("%s%d%s%d", "POLE ", currentPole,"/", 1);//FIX LATER
                 lcd_set_ddram_addr(LCD_LINE2_ADDR);
-                printf("%s%d","TIR. DEPLOY: ", logs[logNumber][3+(currentPole-1)*2]);
+                printf("%s%d","DEPL: ", logs[logNumber][3+(currentPole-1)*3]);
+                printf("%s%d"," CM: ", logs[logNumber][5+(currentPole-1)*3]);
                 lcd_set_ddram_addr(LCD_LINE3_ADDR);
-                printf("%s%d","TIRE. ON POLE: ", logs[logNumber][4+(currentPole-1)*2]);
+                printf("%s%d","ON POLE: ", logs[logNumber][4+(currentPole-1)*3]);
                 lcd_set_ddram_addr(LCD_LINE4_ADDR);
                 printf("%s","1<- 2-> 3MENU");//MANUALLY TYPE ARROWS WITH BITS LATER
                 break;
@@ -206,7 +208,7 @@ void EncoderInit(){
 }
 
 //CLOCK STUFF
-
+//constant definitions for timer0 module
 #define OSC_CLOCKS_PER_INSTRUCTION_CYCLE (4ul)
 #define TIMER0_PRESCALE_COUNT (2ul)
 #define TIMER0_COUNTS_PER_HALF_SECOND (65536ul - (((_XTAL_FREQ / OSC_CLOCKS_PER_INSTRUCTION_CYCLE)/TIMER0_PRESCALE_COUNT)/1000ul))
@@ -216,11 +218,12 @@ void CLK_INIT( void ){
     OSCCONbits.IRCF = 0b100; //1 MHz
 }
 
-//this function from https://www.microchip.com/forums/m1075989.aspx
+//initialize the timer
+//this function based off of https://www.microchip.com/forums/m1075989.aspx
 void TIMER_INIT( void ){
     T0CONbits.TMR0ON  = 0;      //stop TIMER0 counter
     T0CONbits.T08BIT  = 0;      //select 16-bit mode
-    T0CONbits.T0CS    = 0;      //select the internal clock to drive timer0//this is actually clk0 which is one fourth of external clock signal
+    T0CONbits.T0CS    = 0;      //select the external clock signal
     T0CONbits.PSA     = 0;      //use prescaler for TIMER0
     T0CONbits.T0PS    = 0b000;  //assign the 1:64 pre-scaler to TIMER0 
     TMR0H = TIMER0_COUNTS_PER_HALF_SECOND >> 8;
@@ -233,7 +236,7 @@ void TIMER_INIT( void ){
 }
 
 
-//set timer interrupt for 1 second
+//set millisecond timer
 void initSecondTimer(){
     //set millisecondsMeasured to zero
     millisecondsMeasured = 0ul;
@@ -249,8 +252,7 @@ void initSecondTimer(){
     TMR0H = 0xF0;
     TMR0L = 0xBE;               // Timer0 preload value
     TMR0IE = 1;// enable timer0 interrupt 
-    TMR0ON = 1; //turn on timer 0
-         
+    TMR0ON = 1; //turn on timer 0      
     return;
 }
 
@@ -258,10 +260,171 @@ void initSecondTimer(){
 void stopTimer(){//stop the 16 bit timer from counting seconds
     TMR0IE = 0;//disable timer0 interrupt
 }
+
+
+void ee_write_byte(unsigned char address, unsigned char *_data){
+
+    EEDATA = *_data;
+    EEADR = address;
+    // start write sequence as described in datasheet, page 91
+    EECON1bits.EEPGD = 0;
+    EECON1bits.CFGS = 0;
+    EECON1bits.WREN = 1; // enable writes to data EEPROM
+    INTCONbits.GIE = 0;  // disable interrupts
+    EECON2 = 0x55;
+    EECON2 = 0x0AA;
+    EECON1bits.WR = 1;   // start writing
+    do {
+        ClrWdt();
+        } while(EECON1bits.WR);                            // occupato ? 
+    EECON1bits.WREN=0;                                // disabilita write
+    
+}
+
+void ee_read_byte(unsigned char address, unsigned char *_data){
+    EEADR = address;
+    EECON1bits.CFGS = 0;
+    EECON1bits.EEPGD = 0;
+    EECON1bits.RD = 1;
+    *_data = EEDATA;
+}
 /*
 do an operation 
  
 */
+
+//SAVE LOGS TO EEPROM
+void saveLogsOld(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+    
+    unsigned char x = 0x00;
+    for (int i = 0 ; i < 5; i++){
+        for (int j = 1; j < 48; j++){
+            bigNum = logs[i][j];
+            if (j == 0 || (j != 1 && j != 2 && j != 3 && j !=4 && j-5 >= 0&&(j-5)%3 == 0)){//if it is distance or time then save 2 bytes
+                
+                a = ((bigNum >> 8) & 0xFF);
+                b = (bigNum & 0xFF);
+                ee_write_byte(x, &a);
+                x++;
+                ee_write_byte(x, &b);
+                x++;
+            } else {
+                a = (bigNum & 0xFF);
+                ee_write_byte(x, &a);
+                x++;
+            }
+        }
+    }
+    
+    
+    
+    return;
+}
+void saveLogs(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+    
+    unsigned char x = 0x00;
+    for (int i = 1 ; i < 5; i++){
+        for (int j = 0; j < 48; j++){
+            bigNum = logs[i][j];
+            if ( j >= 5 && (j-5)%3 == 0){//if it is a distance measurement then save 2 bytes because the number can be bigger than 255
+                
+                a = (unsigned char)((bigNum >> 8) & 0xFF);
+                b = (unsigned char)(bigNum & 0xFF);
+                
+                //try robotinit here perhaps
+                ee_write_byte(x, &a);
+                ee_write_byte(x+1, &b);
+                x+=2;
+            } else {
+                a = (unsigned char)(bigNum & 0xFF);
+                ee_write_byte(x, &a);
+                x++;
+
+            }
+            /*lcd_clear();
+            lcd_home();
+            printf("%d",bigNum);
+            __delay_ms(100);*/
+        }
+    }
+    
+
+    
+    return;
+}
+
+
+//READ LOGS FROM EEPROM
+void readLogsOld(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+    
+    unsigned char x = 0x00;
+    for (int i = 0 ; i < 5; i++){
+        for (int j = 1; j < 48; j++){
+            if (j == 0 || (j != 1 && j != 2 && j != 3 && j !=4 && j-5 >= 0 &&(j-5)%3 == 0)){
+            ee_read_byte(x, &a);
+            x++;
+            ee_read_byte(x, &b);
+            x++;
+            bigNum = a;
+            bigNum = (bigNum << 8) | b ;
+            } else {
+            ee_read_byte(x, &a);
+            x++;
+            bigNum = a;
+            }
+            logs[i][j] = bigNum;
+        }
+    }
+    
+    
+    
+    return;
+}
+
+void readLogs(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+    
+    unsigned char x = 0x00;
+    for (int i = 1 ; i < 5; i++){
+        for (int j = 0; j < 48; j++){
+            if ( j >= 5 && (j-5)%3 == 0){//if it is a distance measurement then save 2 bytes because the number can be bigger than 255
+                ee_read_byte(x, &a);
+                ee_read_byte(x+1, &b);
+                x+=2;
+                bigNum = a;
+                bigNum = (bigNum << 8) | b ;
+            } else {
+                ee_read_byte(x, &a);
+                x++;
+                bigNum = a;
+            }
+            /*lcd_clear();
+            lcd_home();
+            printf("%d",bigNum);
+            __delay_ms(100);*/
+            logs[i][j] = bigNum;
+        }
+    }
+    //if all else fails try delays in each iteration
+    
+    return;
+}
+
 
 //initialize the motor pwm
 void init_motor_PWM(){
@@ -314,26 +477,24 @@ void set_pwm_duty_cycle(float dutyA, float dutyB){
         // then we compute a percentage of this (duty_val) as per the argument
         // passed in. See datasheet pg 150-151 (equation 16-2, and figure 16-2)
         unsigned short max_duty_val = PR2 + 1;//technically this should be times 4, but this is fixed below
-        //BELOW SAMPLE CODE IS NOT WORKING
-        // unsigned short duty_val = (unsigned short)(
-        //    (duty / 100.0) * (float)max_duty_val
-        //);
-        //THIS CODE WORKS
+       
         unsigned short duty_valA = (unsigned short)((dutyA *4 / 100.0) * (float)max_duty_val);
         unsigned short duty_valB = (unsigned short)((dutyB *4/ 100.0) * (float)max_duty_val);
-   
         
         // pwm to port rc2
         CCP1X = duty_valA & 2; // Set the 2 least significant bit in CCP1CON register
         CCP1Y = duty_valA & 1;
         CCPR1L = duty_valA >> 2; // Set rest of the duty cycle bits in CCPR1L
 
-        
         //pwm to port rc1
         CCP2X = duty_valB & 2; // Set the 2 least significant bit in CCP2CON register
         CCP2Y = duty_valB & 1;
         CCPR2L = duty_valB >> 2; // Set rest of the duty cycle bits in CCPR2L
-
+        //BELOW SAMPLE CODE IS NOT WORKING
+        // unsigned short duty_val = (unsigned short)(
+        //    (duty / 100.0) * (float)max_duty_val
+        //);
+        //UNCOMMENTED CODE WORKS
     }
 }
 
@@ -412,7 +573,7 @@ int tirePositioning(unsigned long maxOperationTime){
             setMotorSpeeds(90, false, false, 90);
         }
         setMotorSpeeds(0, true, true, 0);
-    } /*else {//if there is a top tire then go backwards until the bottom tire is detected and then halfway through it
+    } else {//if there is a top tire then go backwards until the bottom tire is detected and then halfway through it
         
         //IRRELEVANT
         setMotorSpeeds(0, true, true, 0);        
@@ -425,7 +586,7 @@ int tirePositioning(unsigned long maxOperationTime){
             setMotorSpeeds(90, false, false, 90);
         }
         setMotorSpeeds(0, true, true, 0);
-    }*/
+    }
     
     /////return the correct number of tires that were on the pole
     if (distanceRecordedTop  < 80 && distanceRecordedBottom < 80){ // if there are no tires on the pole, typically the pole width is about 130
@@ -447,7 +608,6 @@ void sendArduinoTireDropRequest(){
     //unsigned char data; // Holds the data to be sent/received
     
     unsigned char data = '1'; //char 1 is to represent a tire drop request
-    
     I2C_Master_Start(); // Start condition
     I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
     I2C_Master_Write(data); // Write key press data
@@ -455,14 +615,12 @@ void sendArduinoTireDropRequest(){
 /*
     while(1) {
         if(send){
-
             
             while (keyPressed == false){
                 continue;
             }
             keyPressed = false;
             unsigned char keypress = (PORTB & 0xF0) >> 4;
-
             
             data = keys[keypress];
             
@@ -470,7 +628,6 @@ void sendArduinoTireDropRequest(){
             I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
             I2C_Master_Write(data); // Write key press data
             I2C_Master_Stop();
-
             // Check for a triple-A sequence. If this sequence occurs, switch 
             // the PIC to receiver mode. To switch back to transmitter mode,
             // reset the PIC
@@ -518,9 +675,7 @@ void sendArduinoTireOperationStartMessage(){
     //unsigned char mem[3]; // Initialize array to check for triple-A sequence
     //unsigned char counter = 0; // Increments each time a byte is sent
     //unsigned char data; // Holds the data to be sent/received
-    
     unsigned char data = '2'; //char 1 is to represent a tire drop request
-    
     I2C_Master_Start(); // Start condition
     I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
     I2C_Master_Write(data); // Write key press data
@@ -550,7 +705,6 @@ void sendArduinoLogs(){
             I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
             I2C_Master_Write(data1); // Write key press data
             I2C_Master_Stop();
-
         }        
     }
     */
@@ -586,11 +740,9 @@ bool requestIsTireDropDone(){//send request to arduino to see if the tire drop i
 void adjustCourse(){
     return;
 }
-
 void returnHome(){
     return;
 }
-
 checkForPolesInWay(int* leftPole, int* rightPole){
     return;
 }
@@ -686,9 +838,7 @@ void errorCorrectedMoveAccelerate(int goalSpeed, int accelerationPerS, unsigned 
 void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, long distanceDegrees, unsigned long maxOperationTime){
     long motorAStartDistance = motorADistance;
     long motorBStartDistance = motorBDistance;
-
     //change the startDistance after every movement in dooperation
-    
     while (millisecondsMeasured < maxOperationTime && abs(motorADistance - motorAStartDistance) < distanceDegrees){ 
         errorCorrectedMove(goalSpeed, turnRatio, motorAStartDistance, motorBStartDistance, correctionConstant);
     }
@@ -697,7 +847,8 @@ void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionCons
 
 
 void doOperation(){
-    
+            LATAbits.LATA5 = 0;
+        LATBbits.LATB3 = 0; 
     // Write the address of the slave device, that is, the Arduino Nano. Note
     // that the Arduino Nano must be configured to be running as a slave with
     // the same address given here. Note that other addresses can be used if
@@ -707,12 +858,13 @@ void doOperation(){
     I2C_Master_Write(0b00010000); // 7-bit Arduino slave address + write
     I2C_Master_Stop();
 
+    
     sendArduinoTireOperationStartMessage();//send a character to the arduino to signify the start of the operation
     //set timer for 3 minutes
     //initSecondTimer();//start the timer so millisecondsMeasured start to get updated
     //  CLK_INIT();
-    TIMER_INIT();
-    millisecondsMeasured = 30000ul;
+    TIMER_INIT();   
+    millisecondsMeasured = 0ul;
     //set variables
 	int goalSpeed = 30;
 	int motorASpeed = 30;
@@ -720,14 +872,14 @@ void doOperation(){
 	int errorScaleFactor = 1;
 	int error = 0;
 	int currentAngle = 0;
-	enum operationStates {moveForward, poleFinding, tireDrop, courseAdjustment, returnHome, complete, leavePole};
+	enum operationStates {moveForward, poleFinding, tireDrop, noTireDrop, courseAdjustment, returnHome, complete, leavePole};
 	enum operationStates currentOperationState = moveForward;
 	int leftRangeFinder = 0;
 	int rightRangeFinder = 0;
 	int tiresToDrop = 0;
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
-    unsigned long timeInOperation = 180000ul; //length in milliseconds
+    unsigned long timeInOperation = 10000ul; //length in milliseconds
     long motorAStartDistance = motorADistance;//RESET TO 0 AFTER EVERY MOVEMENT
     long motorBStartDistance = motorBDistance;//RESET TO 0 AFTER EVERY MOVEMENT
     unsigned long motorStartTime = millisecondsMeasured; //RESET AFTER EVERY MOVEMENT
@@ -754,6 +906,8 @@ void doOperation(){
 
     long distanceToPole = 0ll;
     long distanceFromLastPole = 0ll;
+    int distanceToPoleCM = 0;
+    int distanceFromLastPoleCM = 0;
 
     
     //NOTE...
@@ -824,28 +978,52 @@ void doOperation(){
                 
                 LATAbits.LATA2 = 0;
                 LATAbits.LATA3 = 1;
-
                 LATAbits.LATA2 = 1;
                 LATAbits.LATA3 = 0;*/
                 //PIDCorrectedMove(goalSpeed, 1, motorAStartDistance, motorBStartDistance, 0.1, 0, 0, PIDData);
                 //setMotorSpeeds(80,true,true,80);
                 //errorCorrectedMoveAccelerate(90, 30, motorStartTime, 1, motorAStartDistance, motorBStartDistance, 0.1);
-                errorCorrectedMove(90, 1, motorAStartDistance, motorBStartDistance, 0.4);
+                errorCorrectedMove(90, 1, motorAStartDistance, motorBStartDistance, 1.2);
+                /*
+                logs[0][1] = 1;
+                    logs[0][2] = 2;  
+                    logs[0][3+(1-1)*3] = 3;
+                    logs[0][4+(1-1)*3] = 4;//tires left on pole guess for now
+                    logs[0][5+(1-1)*3] = 5;
+                */
                 
-                if(motorADistance - motorAStartDistance > 30000){
+                //if the 4 metre mark aka the end of the operation zone is reached then cut the operation to prevent time penalty loss
+                if(motorADistance > 4*clicksPerM){
                     currentOperationState = complete;
                 }
                 //setMotorSpeeds(30, true, true, 30); //write new speeds to PORTC1 and PORTC2 PWM pins; 
                 break;
             case poleFinding: //finding out the number of tires on the pole and positioning the robot by the pole
                 //set up pole data:
-                distanceFromLastPole = motorADistance - distanceToPole;
-                distanceToPole = motorADistance;
+ 
 
+                
                 poleNumber++;
                 
                 //find out the number of tires on the pole and position the robot to the pole
                 tiresOnPole = tirePositioning(timeInOperation);
+                //tiresOnPole = 2;
+                
+                /*if (tiresOnPole == 2){
+                    //if there are 2 tires on the pole then the tire positioning function doesn't stop at the pole so we subtract distance to get an accurate distance value
+                    distanceFromLastPole = motorADistance - 50 - distanceToPole;//this is the old value of distancetopole
+                    distanceToPole = motorADistance - 50;
+                } else {
+                    distanceFromLastPole = motorADistance - distanceToPole;
+                    distanceToPole = motorADistance;
+                }*/
+                
+                distanceFromLastPole = motorADistance - distanceToPole;
+                distanceToPole = motorADistance;
+                
+                distanceFromLastPoleCM = (int)((double)distanceFromLastPole/clicksPerM*100);
+                distanceToPoleCM = (int)((double)distanceToPole/clicksPerM*100);
+                
 				lcd_clear();//prepare screen for next state
                 lcd_home();
                 printf("TIRE DROP");
@@ -858,41 +1036,104 @@ void doOperation(){
                 }*/
                 ////END OF TEST CODE
                 
-
+                if (tiresOnPole == 2){
+                    tiresToDrop = 0;
+                } else if (poleNumber == 1){
+                    if (tiresOnPole == 1){
+                        tiresToDrop = 1;
+                    } else {
+                        tiresToDrop = 2;
+                    }
+                } else {
+                    if (distanceFromLastPole < 0.3*clicksPerM){
+                        if (tiresOnPole == 1){
+                            tiresToDrop = 0;
+                        } else {//0 tires on pole
+                            tiresToDrop = 1;
+                        }
+                    } else {
+                        if (tiresOnPole == 1){
+                            tiresToDrop = 1;
+                        } else {
+                            tiresToDrop = 2;
+                        }
+                    }
+                    
+                }
+                lcd_set_ddram_addr(LCD_LINE3_ADDR);
+                printf("%d dropping", tiresToDrop);                
+                lcd_set_ddram_addr(LCD_LINE4_ADDR);
+                
+                printf("%d cm from pole", distanceFromLastPoleCM );                
                 
                 
-				sendArduinoTireDropRequest();
+                //tiresToDrop = 1;//hard-coded for now                
+				if (tiresToDrop > 0){
+                    sendArduinoTireDropRequest();
+                    currentOperationState = tireDrop;
+                } else {
+                    currentOperationState = noTireDrop;
+                }
                 //tiresToDrop = 1 or 2 depending on he number needed on the pole;
 
-                tiresToDrop = 1;//hard-coded for now
-                currentOperationState = tireDrop;
+
+                
                 //lcd_clear();//prepare screen for next state        
                 //printf("TIRE DROP");
                 //setMotorSpeeds(0, true, true, 0);
 				break;
 			case tireDrop:
+
                 //send command to arduino via i2c asking if the tire-drop is complete;
-				isDoneDrop = requestIsTireDropDone();
-                //isDoneDrop is given true or false in communication over I2C;
-				if (isDoneDrop){
-					tiresToDrop -- ;
-                    tiresDeployedOnPole++;
-					if (tiresToDrop == 0){
-						currentOperationState = leavePole;
-                                            //reset pole data for next pole:
-                        tiresOnPole = 0;
-                        totalTiresSupplied += tiresDeployedOnPole;//???? QUESTION IF THIS IS THE RIGHT ALGORITHM OR IF THIS SHOULD BE TIRES THAT MAKE IT TO POLE
-                        tiresDeployedOnPole = 0;
-					} else {
-                        //send command to Arduino via I2C asking for a tire drop for the next tire
-						sendArduinoTireDropRequest();	
-					}
-				}
+
+                    isDoneDrop = requestIsTireDropDone();
+                    //isDoneDrop is given true or false in communication over I2C;
+                    if (isDoneDrop){
+                        tiresToDrop -- ;
+                        tiresDeployedOnPole++;
+                        if (tiresToDrop == 0){
+                           currentOperationState = leavePole;
+                            
+                            totalTiresSupplied += tiresDeployedOnPole;//???? QUESTION IF THIS IS THE RIGHT ALGORITHM OR IF THIS SHOULD BE TIRES THAT MAKE IT TO POLE
+                            
+                            //tiresOnPoleAfterOp =?????
+                            
+                            //UPDATE THE LOG HERE FOR POLE RELATED DATA
+                            logs[0][1] = totalTiresSupplied;
+                            logs[0][2] = poleNumber;  
+                            logs[0][3+(poleNumber-1)*3] = tiresDeployedOnPole;
+                            logs[0][4+(poleNumber-1)*3] = tiresDeployedOnPole + tiresOnPole;//tires left on pole guess for now
+                            logs[0][5+(poleNumber-1)*3] = distanceToPoleCM;
+                            //reset pole data for next pole:
+                            tiresOnPole = 0;
+                            tiresDeployedOnPole = 0;
+
+                        } else {
+                            //send command to Arduino via I2C asking for a tire drop for the next tire
+                            sendArduinoTireDropRequest();	
+                        }
+                    }
 
 
                 
 				break;
-			case courseAdjustment:
+			case noTireDrop:
+                opDelay(4000, timeInOperation);//delay so the human can read the screen
+                    tiresDeployedOnPole = 0;
+                    tiresOnPoleAfterOp = tiresOnPole;
+                    //UPDATE THE LOG HERE FOR POLE RELATED DATA
+                    logs[0][1] = totalTiresSupplied;
+                    logs[0][2] = poleNumber;  
+                    logs[0][3+(poleNumber-1)*3] = tiresDeployedOnPole;
+                    logs[0][4+(poleNumber-1)*3] = tiresDeployedOnPole + tiresOnPole;//tires left on pole guess for now
+                    logs[0][5+(poleNumber-1)*3] = distanceToPoleCM;
+                    
+                    //reset variable for next pole
+                    tiresOnPole = 0;
+                    tiresOnPoleAfterOp = 0;
+                    currentOperationState = leavePole;
+                break;
+            case courseAdjustment:
 				//adjustCourse();//improve
                 currentOperationState = moveForward;
 				break;
@@ -934,10 +1175,18 @@ void doOperation(){
                 
                 //FIX this should update logs constantly
                 sendArduinoAbortOperationMessage();
-                for (int i = 0; i < 48; i++){
-                    logs[0][i] = 3;//index 0 means the justRan log
+                
+                //update the operation time in the logs
+                logs[0][0] = (int)(millisecondsMeasured/1000);
+                /*int i = 0;
+                while (1){
+                    lcd_home();
+                    lcd_clear();
+                    printf("%d", logs[0][i]);
+                    i++;
+                    __delay_ms(2000);
                 }
-				
+                */
                 LATAbits.LATA4 = 0; //enable the keypad once again now that operation is over
 				return;
                 break;
@@ -961,13 +1210,16 @@ void doOperation(){
 			currentOperationState = complete;
             //also send ABORT message to arduino
 		}
-		switch (currentOperationState){//FINISH DETAILS!!!!!
+		switch (currentOperationState){
             case moveForward: //moving the robot to the next pole	   
                 /*if (bottomBreakBeamTriggeredChange || topBreakBeamTriggeredChange){
 					bottomBreakBeamTriggeredChange = 0;
                     topBreakBeamTriggeredChange = 0;
 					currentOperationState = poleFinding;
 				}*/
+                /*if (millisecondsMeasured <1000){
+                    currentOperationState = poleFinding;
+                }*/
                 if (topLaserStatePrev != topLaserState || bottomLaserStatePrev != bottomLaserState){
                     if (topLaserStatePrev != topLaserState){
                         badCount++;
@@ -1008,32 +1260,8 @@ void doOperation(){
 #pragma stack 0x300 0xff // set 64 byte stack at 0x300, needed by sdcc
 
 
-void ee_write_byte(unsigned char address, unsigned char *_data){
 
-    EEDATA = *_data;
-    EEADR = address;
-    // start write sequence as described in datasheet, page 91
-    EECON1bits.EEPGD = 0;
-    EECON1bits.CFGS = 0;
-    EECON1bits.WREN = 1; // enable writes to data EEPROM
-    INTCONbits.GIE = 0;  // disable interrupts
-    EECON2 = 0x55;
-    EECON2 = 0x0AA;
-    EECON1bits.WR = 1;   // start writing
-    do {
-        ClrWdt();
-        } while(EECON1bits.WR);                            // occupato ? 
-    EECON1bits.WREN=0;                                // disabilita write
-    
-}
 
-void ee_read_byte(unsigned char address, unsigned char *_data){
-    EEADR = address;
-    EECON1bits.CFGS = 0;
-    EECON1bits.EEPGD = 0;
-    EECON1bits.RD = 1;
-    *_data = EEDATA;
-}
 /*
 void initUsart()
 {
@@ -1047,9 +1275,6 @@ void initUsart()
             );
     stdout = STREAM_USART;
 }
-
-
-
 // very simple example. use on an erased eeprom
 */
 /////////END OF EEPROM SAMPLE CODE
@@ -1097,6 +1322,10 @@ void robotInit(void){
     TRISBbits.TRISB6 = 1;
     TRISBbits.TRISB7 = 1;
     
+    //h bridge
+    TRISBbits.TRISB3 = 0;
+    TRISAbits.TRISA5 = 0;
+    
     //RA4 is an output for the kpd
     TRISAbits.TRISA4 = 0;
     LATAbits.LATA4 = 0; // leave keypad kpd bit off so keypad is functional
@@ -1128,14 +1357,63 @@ void robotInit(void){
 
 void replaceOldLog(){
     for (int i = 0; i< 48; i++){
+        logs[1][i] = logs[2][i];//index 0 is the justran log and index 4 is the most recent log to be written to eeprom
+    }
+
+    
+    for (int i = 0; i< 48; i++){
+        logs[2][i] = logs[3][i];//index 0 is the justran log and index 4 is the most recent log to be written to eeprom
+    }
+    
+    for (int i = 0; i< 48; i++){
+        logs[3][i] = logs[4][i];//index 0 is the justran log and index 4 is the most recent log to be written to eeprom
+    }
+
+    for (int i = 0; i< 48; i++){
         logs[4][i] = logs[0][i];//index 0 is the justran log and index 4 is the most recent log to be written to eeprom
     }
+    saveLogs(); //save to eeprom
+    robotInit();
     return;
 }
 
 void main() {
-    robotInit();
     
+    
+    robotInit();
+    lcd_clear();
+    lcd_home();
+    /*
+    //test stuff
+    int x = 0;
+    for (int i = 1; i < 5;i++){
+        for (int j = 0; j < 48;j++){
+            logs[i][j] = x;
+            x++;
+        }
+    }
+
+    saveLogs();
+    for (int i = 1; i < 5;i++){
+        for (int j = 0; j < 48;j++){
+            logs[i][j] = 0;
+        }
+    }    */
+
+    readLogs();//get permanent logs from eeprom memory
+    
+
+    /*
+    for (int i = 1; i < 5;i++){
+        for (int j = 0; j < 48;j++){
+            lcd_clear();
+            lcd_home();
+            printf("%d",logs[i][j]);
+            __delay_ms(200);
+        }
+    }*/
+
+    robotInit();
     //unsigned char* time = robotInit();
     unsigned char time[7]; // Create a byte array to hold time read from RTC
     
@@ -1148,11 +1426,16 @@ void main() {
     enum logStates {justRan,one,two,three,four};//one is the most recent log
     enum logStates currentLogState = one; 
     
+    //readLogs(); //get logs from eeprom
+    
     unsigned long tick = 0ul;
     //sendArduinoLogs();
     //const char* msg = msg1;
     while(1){
-            if (tick%10ul==0){//if 1 second has passed then increase the current time
+        LATAbits.LATA5 = 0;
+        LATBbits.LATB3 = 1; 
+        
+            if (tick%10ul==0){//
                         // Reset RTC memory pointer
                 I2C_Master_Start(); // Start condition
                 I2C_Master_Write(0b11010000); // 7 bit RTC address + Write
@@ -1160,7 +1443,7 @@ void main() {
                 I2C_Master_Stop(); // Stop condition
 
                 // Read current time
-                I2C_Master_Start(); // Start condition
+                I2C_Master_Start(); //Start condition
                 I2C_Master_Write(0b11010001); // 7 bit RTC address + Read
                 for(unsigned char i = 0; i < 6; i++){
                     time[i] = I2C_Master_Read(ACK); // Read with ACK to continue reading
@@ -1200,6 +1483,7 @@ void main() {
                 lcd_clear();//prepare screen for next state
                 currentRobotState = operationComplete;//change state after finishing operation
                 
+
                 break;
             case operationComplete:
                 
@@ -1271,7 +1555,7 @@ void main() {
                     } else if (keyValue == '3'){
                         currentLogState = three;
                     } else if (keyValue == '4'){
-                        currentLogState = '4';
+                        currentLogState = four;
                     } else {
                         break;
                     }
@@ -1330,6 +1614,8 @@ void __interrupt() interruptHandler(void){
    }*/
 }
 
+
+
 void mainEEPROM(void){
     robotInit();
     lcd_clear();
@@ -1372,4 +1658,82 @@ void mainEEPROM(void){
     printf("%d",bigNum2);
     __delay_ms(5000);
     
+}
+
+
+void mainEEPROMTest(void){
+    robotInit();
+
+    
+    //int logsB[5][48];
+    
+    
+    int bigNum [2][5] = {{0,1,2,3,32001},{5,6,7,8,9}};
+    int bigNum2 [2][5];
+    unsigned char currentIndex = 0x00;
+    unsigned char a;
+    unsigned char b;
+    
+    for (int i = 0; i<2; i++){
+        for (int j = 0; j< 5; j++){
+
+
+            if(i == 0 && j == 4){
+                a = (unsigned char)((bigNum[i][j] >> 8) & 0xFF);
+                b = (unsigned char)(bigNum[i][j] & 0xFF);
+                //initUsart();
+                robotInit();
+
+                ee_write_byte(currentIndex, &a);
+
+
+                ee_write_byte(currentIndex + 1, &b);
+
+                currentIndex += 2;
+            }else {
+                a = (unsigned char) (bigNum[i][j] & 0xFF);
+                ee_write_byte(currentIndex, &a);
+                currentIndex++;
+            }
+
+            __delay_ms(20);
+        }
+    }
+    
+    currentIndex = 0;
+    for (int i = 0; i<2; i++){
+        for (int j = 0; j< 5; j++){
+            if(i == 0 && j == 4){
+                ee_read_byte(currentIndex, &a);
+
+                ee_read_byte(currentIndex + 1, &b);
+
+                currentIndex += 2;
+
+                bigNum2[i][j] = a;
+                bigNum2[i][j] = (bigNum2[i][j] << 8) | b ;
+            } else {
+                ee_read_byte(currentIndex, &a);
+                currentIndex++;
+                bigNum2[i][j] = a;
+            }
+
+
+            __delay_ms(20);  
+        }
+    }
+    
+    lcd_clear();
+    lcd_home();
+    for (int i = 0; i<2; i++){
+        for (int j = 0; j< 5; j++){
+            printf("%s", " ");
+            printf("%d",bigNum2[i][j]);
+            __delay_ms(20);  
+        }
+        lcd_set_ddram_addr(LCD_LINE2_ADDR);
+    }
+    
+
+    __delay_ms(10000);
 }

@@ -7,7 +7,7 @@
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\language_support.h" 1 3
 # 2 "<built-in>" 2
 # 1 "main.c" 2
-# 10 "main.c"
+# 11 "main.c"
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 1 3
 # 18 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 3
 extern const char __xc8_OPTIM_SPEED;
@@ -4380,7 +4380,7 @@ extern __attribute__((nonreentrant)) void _delaywdt(unsigned long);
 #pragma intrinsic(_delay3)
 extern __attribute__((nonreentrant)) void _delay3(unsigned char);
 # 32 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 2 3
-# 10 "main.c" 2
+# 11 "main.c" 2
 
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 1 3
 # 10 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 3
@@ -4944,7 +4944,7 @@ double jn(int, double);
 double y0(double);
 double y1(double);
 double yn(int, double);
-# 11 "main.c" 2
+# 12 "main.c" 2
 
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdio.h" 1 3
 # 24 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdio.h" 3
@@ -5082,10 +5082,10 @@ char *ctermid(char *);
 
 
 char *tempnam(const char *, const char *);
-# 12 "main.c" 2
+# 13 "main.c" 2
 
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdbool.h" 1 3
-# 13 "main.c" 2
+# 14 "main.c" 2
 
 
 # 1 "./configBits.h" 1
@@ -5143,7 +5143,7 @@ char *tempnam(const char *, const char *);
 
 
 #pragma config EBTRB = OFF
-# 15 "main.c" 2
+# 16 "main.c" 2
 
 # 1 "./lcd.h" 1
 # 68 "./lcd.h"
@@ -5189,7 +5189,7 @@ void lcd_shift_cursor(unsigned char numChars, lcd_direction_e direction);
 void lcd_shift_display(unsigned char numChars, lcd_direction_e direction);
 # 118 "./lcd.h"
 void putch(char data);
-# 16 "main.c" 2
+# 17 "main.c" 2
 
 # 1 "./I2C.h" 1
 # 38 "./I2C.h"
@@ -5217,7 +5217,7 @@ void I2C_Master_Stop(void);
 void I2C_Master_Write(unsigned byteToWrite);
 # 68 "./I2C.h"
 unsigned char I2C_Master_Read(unsigned char ackBit);
-# 17 "main.c" 2
+# 18 "main.c" 2
 
 
 
@@ -5230,11 +5230,13 @@ const char keys[] = "123A456B789C*0#D";
 
 
 
+const int clicksPerM = 1770;
+
 
 volatile _Bool keyPressed = 0;
-volatile int motorADistance = 0;
-volatile int motorBDistance = 0;
-volatile unsigned long millisecondsMeasured = 0;
+volatile long motorADistance = 0ll;
+volatile long motorBDistance = 0ll;
+volatile unsigned long millisecondsMeasured;
 volatile _Bool topBreakBeamTriggeredChange = 0;
 volatile _Bool bottomBreakBeamTriggeredChange = 0;
 volatile _Bool motorBDirection = 1;
@@ -5268,11 +5270,12 @@ void doDisplayLog(int logNumber){
                 break;
             case pole:
                 { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
-                printf("%s%d%s%d", "POLE ", currentPole,"/", logs[logNumber][2]);
+                printf("%s%d%s%d", "POLE ", currentPole,"/", 1);
                 { lcdInst(0x80 | LCD_LINE2_ADDR);};
-                printf("%s%d","TIR. DEPLOY: ", logs[logNumber][3+(currentPole-1)*2]);
+                printf("%s%d","DEPL: ", logs[logNumber][3+(currentPole-1)*3]);
+                printf("%s%d"," CM: ", logs[logNumber][5+(currentPole-1)*3]);
                 { lcdInst(0x80 | LCD_LINE3_ADDR);};
-                printf("%s%d","TIRE. ON POLE: ", logs[logNumber][4+(currentPole-1)*2]);
+                printf("%s%d","ON POLE: ", logs[logNumber][4+(currentPole-1)*3]);
                 { lcdInst(0x80 | LCD_LINE4_ADDR);};
                 printf("%s","1<- 2-> 3MENU");
                 break;
@@ -5354,9 +5357,9 @@ void updateMotorBEncoder(){
   int interruptPinState = PORTBbits.RB2;
   int directionPin = PORTCbits.RC0;
   if(directionPin == interruptPinState){
-    motorBDistance++;
-  } else {
     motorBDistance--;
+  } else {
+    motorBDistance++;
   }
 }
 
@@ -5385,9 +5388,9 @@ void updateMotorAEncoder(){
   int interruptPinState = PORTBbits.RB0;
   int directionPin = PORTEbits.RE1;
   if(directionPin == interruptPinState){
-    motorADistance--;
-  } else {
     motorADistance++;
+  } else {
+    motorADistance--;
   }
 }
 
@@ -5406,7 +5409,7 @@ void EncoderInit(){
 
   INT0IE = 1;
 }
-# 213 "main.c"
+# 217 "main.c"
 void CLK_INIT( void ){
     OSCCONbits.IRCF = 0b100;
 }
@@ -5431,7 +5434,7 @@ void TIMER_INIT( void ){
 
 void initSecondTimer(){
 
-    millisecondsMeasured = 0;
+    millisecondsMeasured = 0ul;
 
     T08BIT = 0;
     T0PS2 = 1;
@@ -5455,7 +5458,100 @@ void stopTimer(){
 }
 
 
+void ee_write_byte(unsigned char address, unsigned char *_data){
 
+    EEDATA = *_data;
+    EEADR = address;
+
+    EECON1bits.EEPGD = 0;
+    EECON1bits.CFGS = 0;
+    EECON1bits.WREN = 1;
+    INTCONbits.GIE = 0;
+    EECON2 = 0x55;
+    EECON2 = 0x0AA;
+    EECON1bits.WR = 1;
+    do {
+        __asm(" clrwdt");
+        } while(EECON1bits.WR);
+    EECON1bits.WREN=0;
+
+}
+
+void ee_read_byte(unsigned char address, unsigned char *_data){
+    EEADR = address;
+    EECON1bits.CFGS = 0;
+    EECON1bits.EEPGD = 0;
+    EECON1bits.RD = 1;
+    *_data = EEDATA;
+}
+
+
+
+
+
+
+
+void saveLogs(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+
+    unsigned char x = 0x00;
+    for (int i = 0 ; i < 5; i++){
+        for (int j = 1; j < 48; j++){
+            bigNum = logs[i][j];
+            if (j == 0 || (j != 1 && j != 2 && j != 3 && j !=4 && j-5 >= 0&&(j-5)%3 == 0)){
+
+                a = ((bigNum >> 8) & 0xFF);
+                b = (bigNum & 0xFF);
+                ee_write_byte(x, &a);
+                x++;
+                ee_write_byte(x, &b);
+                x++;
+            } else {
+                a = (bigNum & 0xFF);
+                ee_write_byte(x, &a);
+                x++;
+            }
+        }
+    }
+
+
+
+    return;
+}
+
+
+void readLogs(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+
+    unsigned char x = 0x00;
+    for (int i = 0 ; i < 5; i++){
+        for (int j = 1; j < 48; j++){
+            if (j == 0 || (j != 1 && j != 2 && j != 3 && j !=4 && j-5 >= 0 &&(j-5)%3 == 0)){
+            ee_read_byte(x, &a);
+            x++;
+            ee_read_byte(x, &b);
+            x++;
+            bigNum = a;
+            bigNum = (bigNum << 8) | b ;
+            } else {
+            ee_read_byte(x, &a);
+            x++;
+            bigNum = a;
+            }
+            logs[i][j] = bigNum;
+        }
+    }
+
+
+
+    return;
+}
 
 
 
@@ -5471,7 +5567,7 @@ void init_motor_PWM(){
     TRISCbits.TRISC1 = 1;
 
 
-    const unsigned long FREQUENCY = 1000;
+    const unsigned long FREQUENCY = 1000ul;
     const unsigned char TIMER2_PRESCALER = 16;
     PR2 = (10000000 / (FREQUENCY * 4 * TIMER2_PRESCALER)) - 1;
 
@@ -5555,12 +5651,15 @@ void setMotorSpeeds(int motorASpeed, _Bool Aforward, _Bool Bforward, int motorBS
 
 
 int tirePositioning(unsigned long maxOperationTime){
+    { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+    { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
+
     int topBreakbeam;
     int bottomBreakbeam;
-    int distanceRecordedTop;
-    int startDistanceTop;
-    int distanceRecordedBottom;
-    int startDistanceBottom;
+    long distanceRecordedTop;
+    long startDistanceTop;
+    long distanceRecordedBottom;
+    long startDistanceBottom;
     int topPreviousState = 1;
     int bottomPreviousState = 1;
 
@@ -5586,34 +5685,36 @@ int tirePositioning(unsigned long maxOperationTime){
         topPreviousState = topBreakbeam;
         bottomPreviousState = bottomBreakbeam;
     }
-
-    if (distanceRecordedTop < 170){
+# 503 "main.c"
+    if (distanceRecordedTop < 80){
         setMotorSpeeds(0, 1, 1, 0);
         opDelay(100, maxOperationTime);
         while(millisecondsMeasured < maxOperationTime && PORTBbits.RB4 == 1){
-            setMotorSpeeds(30, 0, 0, 30);
+            setMotorSpeeds(90, 0, 0, 90);
         }
         setMotorSpeeds(0, 1, 1, 0);
     } else {
+
+
         setMotorSpeeds(0, 1, 1, 0);
         opDelay(100, maxOperationTime);
         while(millisecondsMeasured < maxOperationTime && PORTBbits.RB4 == 1){
-            setMotorSpeeds(30, 0, 0, 30);
+            setMotorSpeeds(90, 0, 0, 90);
         }
-        int startDistance = motorADistance;
+        long startDistance = motorADistance;
         while(millisecondsMeasured < maxOperationTime && abs(startDistance - motorADistance) < distanceRecordedBottom/2){
-            setMotorSpeeds(30, 0, 0, 30);
+            setMotorSpeeds(90, 0, 0, 90);
         }
         setMotorSpeeds(0, 1, 1, 0);
     }
 
 
-    if (distanceRecordedTop < 170 && distanceRecordedBottom < 170){
+    if (distanceRecordedTop < 80 && distanceRecordedBottom < 80){
         return 0;
-    } else if (abs(distanceRecordedTop - distanceRecordedBottom) > 180){
-        return 1;
-    } else {
+    } else if (distanceRecordedTop > 80 && distanceRecordedBottom > 80){
         return 2;
+    } else {
+        return 1;
     }
 }
 
@@ -5632,7 +5733,21 @@ void sendArduinoTireDropRequest(){
     I2C_Master_Write(0b00010000);
     I2C_Master_Write(data);
     I2C_Master_Stop();
-# 483 "main.c"
+# 592 "main.c"
+    return;
+}
+
+void sendArduinoStandbyClampRequest(){
+
+
+
+
+    unsigned char data = 'A';
+
+    I2C_Master_Start();
+    I2C_Master_Write(0b00010000);
+    I2C_Master_Write(data);
+    I2C_Master_Stop();
     return;
 }
 
@@ -5647,6 +5762,24 @@ void sendArduinoTireOperationStartMessage(){
     I2C_Master_Write(0b00010000);
     I2C_Master_Write(data);
     I2C_Master_Stop();
+    return;
+}
+
+void sendArduinoLogs(){
+
+
+
+            int bigNum = 32001;
+            unsigned char a = (char)((bigNum >> 8) & 0xFF);
+            unsigned char b = (char)(bigNum & 0xFF);
+            I2C_Master_Start();
+            I2C_Master_Write(0b00010000);
+            I2C_Master_Write(a);
+            I2C_Master_Write(b);
+
+
+            I2C_Master_Stop();
+# 648 "main.c"
     return;
 }
 
@@ -5675,12 +5808,12 @@ _Bool requestIsTireDropDone(){
     }
     return 0;
 }
-# 542 "main.c"
-void PIDCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, int motorBStartDistance, float kp, float kd, float ki, int * derivativeData){
-    int error = (int)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/turnRatio);
-    int derivative = error - derivativeData[0];
+# 691 "main.c"
+void PIDCorrectedMove(int goalSpeed, float turnRatio, long motorAStartDistance, long motorBStartDistance, float kp, float kd, float ki, long * derivativeData){
+    long error = (long)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/(double)turnRatio);
+    long derivative = error - derivativeData[0];
     derivativeData[0] = error;
-    int integral = derivativeData[1] + error;
+    long integral = derivativeData[1] + error;
     int correctionTerm = (int)(error*kp + derivative*kd + integral*ki);
     int ASpeed = goalSpeed - correctionTerm;
     int BSpeed = (int)((goalSpeed*turnRatio + correctionTerm));
@@ -5706,10 +5839,36 @@ void PIDCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, i
 
 
 
-void errorCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance, int motorBStartDistance, float correctionConstant){
-    int error = (int)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/turnRatio);
+void errorCorrectedMove(int goalSpeed, float turnRatio, long motorAStartDistance, long motorBStartDistance, float correctionConstant){
+    long error = (long)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/(double)turnRatio);
     int ASpeed = (int)(goalSpeed - error*correctionConstant);
-    int BSpeed = (int)((goalSpeed*turnRatio + error*correctionConstant));
+    int BSpeed = (int)(goalSpeed*turnRatio + error*correctionConstant);
+
+    if (ASpeed > 100){
+        ASpeed = 100;
+    }
+    if (ASpeed < 0){
+        ASpeed = 0;
+    }
+    if (BSpeed > 100){
+        BSpeed = 100;
+    }
+    if (BSpeed < 0){
+        BSpeed = 0;
+    }
+
+    setMotorSpeeds(ASpeed , 1, 1, BSpeed);
+    return;
+}
+
+void errorCorrectedMoveAccelerate(int goalSpeed, int accelerationPerS, unsigned long startTime, float turnRatio, long motorAStartDistance, long motorBStartDistance, float correctionConstant){
+    unsigned long accelSpeed = (unsigned long)((millisecondsMeasured - startTime)*(accelerationPerS/(float)1000));
+    if (accelSpeed < goalSpeed){
+        goalSpeed = (int)accelSpeed;
+    }
+    long error = (long)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/(double)turnRatio);
+    int ASpeed = (int)(goalSpeed - error*correctionConstant);
+    int BSpeed = (int)(goalSpeed*turnRatio + error*correctionConstant);
 
     if (ASpeed > 100){
         ASpeed = 100;
@@ -5733,9 +5892,10 @@ void errorCorrectedMove(int goalSpeed, float turnRatio, int motorAStartDistance,
 
 
 
-void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, int distanceDegrees, unsigned long maxOperationTime){
-    int motorAStartDistance = motorADistance;
-    int motorBStartDistance = motorBDistance;
+
+void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionConstant, long distanceDegrees, unsigned long maxOperationTime){
+    long motorAStartDistance = motorADistance;
+    long motorBStartDistance = motorBDistance;
 
 
 
@@ -5747,6 +5907,8 @@ void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionCons
 
 
 void doOperation(){
+            LATAbits.LATA5 = 0;
+        LATBbits.LATB3 = 0;
 
 
 
@@ -5756,31 +5918,34 @@ void doOperation(){
     I2C_Master_Write(0b00010000);
     I2C_Master_Stop();
 
+
     sendArduinoTireOperationStartMessage();
 
 
 
     TIMER_INIT();
-    millisecondsMeasured = 0;
+    millisecondsMeasured = 0ul;
 
- int goalSpeed = 20;
+ int goalSpeed = 30;
  int motorASpeed = 30;
  int motorBSpeed = 30;
  int errorScaleFactor = 1;
  int error = 0;
  int currentAngle = 0;
- enum operationStates {moveForward, poleFinding, tireDrop, courseAdjustment, returnHome, complete, leavePole};
+ enum operationStates {moveForward, poleFinding, tireDrop, noTireDrop, courseAdjustment, returnHome, complete, leavePole};
  enum operationStates currentOperationState = moveForward;
  int leftRangeFinder = 0;
  int rightRangeFinder = 0;
  int tiresToDrop = 0;
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
-    unsigned long timeInOperation = 150000;
-    int motorAStartDistance = motorADistance;
-    int motorBStartDistance = motorBDistance;
+    unsigned long timeInOperation = 10000ul;
+    long motorAStartDistance = motorADistance;
+    long motorBStartDistance = motorBDistance;
+    unsigned long motorStartTime = millisecondsMeasured;
+    int accelerationDelay = 0;
 
-    int PIDData[2] = {0,0};
+    long PIDData[2] = {0,0};
     _Bool topLaserState;
     _Bool topLaserStatePrev;
     _Bool bottomLaserState;
@@ -5799,8 +5964,10 @@ void doOperation(){
 
     int totalTiresSupplied = 0;
 
-    int distanceToPole = 0;
-    int distanceFromLastPole = 0;
+    long distanceToPole = 0ll;
+    long distanceFromLastPole = 0ll;
+    int distanceToPoleCM = 0;
+    int distanceFromLastPoleCM = 0;
 
 
 
@@ -5832,7 +5999,8 @@ void doOperation(){
 
 
     _Bool send = 1;
-    unsigned long millisecondsMeasuredOld = 0;
+
+
 
 
 
@@ -5842,16 +6010,14 @@ void doOperation(){
         topLaserState = PORTBbits.RB4;
         bottomLaserStatePrev = bottomLaserState;
         bottomLaserState = PORTBbits.RB5;
-   if (millisecondsMeasured > millisecondsMeasuredOld){
-            millisecondsMeasuredOld++;
-        }
 
 
         switch (currentOperationState){
             case moveForward:
                 if (counted%100 == 0){
                 { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
-                printf("%d", millisecondsMeasured);
+                { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
+                printf("%lu", millisecondsMeasured);
                 { lcdInst(0x80 | LCD_LINE3_ADDR);};
                 printf("%d", topLaserState);
                 { lcdInst(0x80 | LCD_LINE2_ADDR);};
@@ -5859,76 +6025,170 @@ void doOperation(){
                 { lcdInst(0x80 | LCD_LINE4_ADDR);};
                 printf("A: %d", motorADistance);
                 }
-# 742 "main.c"
-                errorCorrectedMove(goalSpeed, 1, motorAStartDistance, motorBStartDistance, 0.1);
+# 925 "main.c"
+                errorCorrectedMove(90, 1, motorAStartDistance, motorBStartDistance, 1.2);
+# 935 "main.c"
+                if(motorADistance > 4*clicksPerM){
+                    currentOperationState = complete;
+                }
 
                 break;
             case poleFinding:
 
-                distanceFromLastPole = motorADistance - distanceToPole;
-                distanceToPole = motorADistance;
+
+
 
                 poleNumber++;
 
 
                 tiresOnPole = tirePositioning(timeInOperation);
+# 960 "main.c"
+                distanceFromLastPole = motorADistance - distanceToPole;
+                distanceToPole = motorADistance;
+
+                distanceFromLastPoleCM = (int)((double)distanceFromLastPole/clicksPerM*100);
+                distanceToPoleCM = (int)((double)distanceToPole/clicksPerM*100);
+
     { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+                { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
                 printf("TIRE DROP");
                 { lcdInst(0x80 | LCD_LINE2_ADDR);};
                 printf("%d on pole", tiresOnPole);
 
                 setMotorSpeeds(0, 1, 1, 0);
-# 768 "main.c"
-    sendArduinoTireDropRequest();
 
 
-                tiresToDrop = 1;
-                currentOperationState = tireDrop;
+
+
+
+                if (tiresOnPole == 2){
+                    tiresToDrop = 0;
+                } else if (poleNumber == 1){
+                    if (tiresOnPole == 1){
+                        tiresToDrop = 1;
+                    } else {
+                        tiresToDrop = 2;
+                    }
+                } else {
+                    if (distanceFromLastPole < 0.3*clicksPerM){
+                        if (tiresOnPole == 1){
+                            tiresToDrop = 0;
+                        } else {
+                            tiresToDrop = 1;
+                        }
+                    } else {
+                        if (tiresOnPole == 1){
+                            tiresToDrop = 1;
+                        } else {
+                            tiresToDrop = 2;
+                        }
+                    }
+
+                }
+                { lcdInst(0x80 | LCD_LINE3_ADDR);};
+                printf("%d dropping", tiresToDrop);
+                { lcdInst(0x80 | LCD_LINE4_ADDR);};
+
+                printf("%d cm from pole", distanceFromLastPoleCM );
+
+
+
+    if (tiresToDrop > 0){
+                    sendArduinoTireDropRequest();
+                    currentOperationState = tireDrop;
+                } else {
+                    currentOperationState = noTireDrop;
+                }
+
+
+
+
 
 
 
     break;
    case tireDrop:
 
-    isDoneDrop = requestIsTireDropDone();
 
-    if (isDoneDrop){
-     tiresToDrop -- ;
-                    tiresDeployedOnPole++;
-     if (tiresToDrop == 0){
-      currentOperationState = leavePole;
 
-                        tiresOnPole = 0;
-                        totalTiresSupplied += tiresDeployedOnPole;
-                        tiresDeployedOnPole = 0;
-     } else {
+                    isDoneDrop = requestIsTireDropDone();
 
-      sendArduinoTireDropRequest();
-     }
-    }
+                    if (isDoneDrop){
+                        tiresToDrop -- ;
+                        tiresDeployedOnPole++;
+                        if (tiresToDrop == 0){
+                           currentOperationState = leavePole;
+
+                            totalTiresSupplied += tiresDeployedOnPole;
+
+
+
+
+                            logs[0][1] = totalTiresSupplied;
+                            logs[0][2] = poleNumber;
+                            logs[0][3+(poleNumber-1)*3] = tiresDeployedOnPole;
+                            logs[0][4+(poleNumber-1)*3] = tiresDeployedOnPole + tiresOnPole;
+                            logs[0][5+(poleNumber-1)*3] = distanceToPoleCM;
+
+                            tiresOnPole = 0;
+                            tiresDeployedOnPole = 0;
+
+                        } else {
+
+                            sendArduinoTireDropRequest();
+                        }
+                    }
 
 
 
     break;
-   case courseAdjustment:
+   case noTireDrop:
+                opDelay(4000, timeInOperation);
+                    tiresDeployedOnPole = 0;
+                    tiresOnPoleAfterOp = tiresOnPole;
+
+                    logs[0][1] = totalTiresSupplied;
+                    logs[0][2] = poleNumber;
+                    logs[0][3+(poleNumber-1)*3] = tiresDeployedOnPole;
+                    logs[0][4+(poleNumber-1)*3] = tiresDeployedOnPole + tiresOnPole;
+                    logs[0][5+(poleNumber-1)*3] = distanceToPoleCM;
+
+
+                    tiresOnPole = 0;
+                    tiresOnPoleAfterOp = 0;
+                    currentOperationState = leavePole;
+                break;
+            case courseAdjustment:
 
                 currentOperationState = moveForward;
     break;
             case leavePole:
 
                 { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+                { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
                 printf("Leaving Pole");
-                int starterDist = motorADistance;
-                while(millisecondsMeasured < timeInOperation && abs(motorADistance - starterDist) < 3000){
-                    setMotorSpeeds(30, 1, 1, 30);
-                }
-                setMotorSpeeds(0, 1, 1, 0);
-                opDelay(4000, timeInOperation);
+                long startedDistA = motorADistance;
+                long startedDistB = motorBDistance;
 
-                motorAStartDistance = 0;
-                motorBStartDistance = 0;
+
+
+                opErrorCorrectionDegrees(90, 1, 0.1, 180, timeInOperation);
+
+
+
+
+
+
+                motorAStartDistance = 0ll;
+                motorBStartDistance = 0ll;
+                motorStartTime = millisecondsMeasured;
                 currentOperationState = moveForward;
 
+
+                topLaserState = PORTBbits.RB4;
+                topLaserStatePrev = PORTBbits.RB4;
+                bottomLaserState = PORTBbits.RB5;
+                bottomLaserStatePrev = PORTBbits.RB5;
 
                 break;
    case returnHome:
@@ -5936,27 +6196,26 @@ void doOperation(){
     currentOperationState = complete;
     break;
    case complete:
+                setMotorSpeeds(0, 1, 1, 0);
+
 
                 sendArduinoAbortOperationMessage();
-                for (int i = 0; i < 48; i++){
-                    logs[0][i] = 3;
-                }
-    setMotorSpeeds(0, 1, 1, 0);
+
+
+                logs[0][0] = (int)(millisecondsMeasured/1000);
+# 1129 "main.c"
                 LATAbits.LATA4 = 0;
     return;
+                break;
         }
-# 849 "main.c"
+# 1148 "main.c"
   if (millisecondsMeasured >= timeInOperation){
    currentOperationState = complete;
 
   }
   switch (currentOperationState){
             case moveForward:
-
-
-
-
-
+# 1162 "main.c"
                 if (topLaserStatePrev != topLaserState || bottomLaserStatePrev != bottomLaserState){
                     if (topLaserStatePrev != topLaserState){
                         badCount++;
@@ -5995,35 +6254,7 @@ void doOperation(){
 
 
 #pragma stack 0x300 0xff
-
-
-void ee_write_byte(unsigned char address, unsigned char *_data){
-
-    EEDATA = *_data;
-    EEADR = address;
-
-    EECON1bits.EEPGD = 0;
-    EECON1bits.CFGS = 0;
-    EECON1bits.WREN = 1;
-    INTCONbits.GIE = 0;
-    EECON2 = 0x55;
-    EECON2 = 0x0AA;
-    EECON1bits.WR = 1;
-    do {
-        __asm(" clrwdt");
-        } while(EECON1bits.WR);
-    EECON1bits.WREN=0;
-
-}
-
-void ee_read_byte(unsigned char address, unsigned char *_data){
-    EEADR = address;
-    EECON1bits.CFGS = 0;
-    EECON1bits.EEPGD = 0;
-    EECON1bits.RD = 1;
-    *_data = EEDATA;
-}
-# 947 "main.c"
+# 1222 "main.c"
 const char happynewyear[7] = {
     00,
     55,
@@ -6067,6 +6298,10 @@ void robotInit(void){
     TRISBbits.TRISB7 = 1;
 
 
+    TRISBbits.TRISB3 = 0;
+    TRISAbits.TRISA5 = 0;
+
+
     TRISAbits.TRISA4 = 0;
     LATAbits.LATA4 = 0;
 
@@ -6097,15 +6332,39 @@ void robotInit(void){
 
 void replaceOldLog(){
     for (int i = 0; i< 48; i++){
+        logs[1][i] = logs[2][i];
+    }
+
+
+    for (int i = 0; i< 48; i++){
+        logs[2][i] = logs[3][i];
+    }
+
+    for (int i = 0; i< 48; i++){
+        logs[3][i] = logs[4][i];
+    }
+
+    for (int i = 0; i< 48; i++){
         logs[4][i] = logs[0][i];
     }
+
     return;
 }
 
 void main() {
+
     robotInit();
 
-
+    { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
+                printf("%s%d%s%d", "POLE ", 2,"/", 1);
+                { lcdInst(0x80 | LCD_LINE2_ADDR);};
+                printf("%s%d","DEPL: ", 1);
+                printf("%s%d"," CM: ", 32);
+                { lcdInst(0x80 | LCD_LINE3_ADDR);};
+                printf("%s%d","ON POLE: ", 2);
+                { lcdInst(0x80 | LCD_LINE4_ADDR);};
+                printf("%s","1<- 2-> 3MENU");
+# 1354 "main.c"
     unsigned char time[7];
 
 
@@ -6117,10 +6376,16 @@ void main() {
     enum logStates {justRan,one,two,three,four};
     enum logStates currentLogState = one;
 
-    unsigned long tick = 0;
+
+
+    unsigned long tick = 0ul;
+
 
     while(1){
-            if (tick%10==0){
+        LATAbits.LATA5 = 0;
+        LATBbits.LATB3 = 1;
+
+            if (tick%10ul==0){
 
                 I2C_Master_Start();
                 I2C_Master_Write(0b11010000);
@@ -6167,6 +6432,7 @@ void main() {
                 doOperation();
                 { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
                 currentRobotState = operationComplete;
+
 
                 break;
             case operationComplete:
@@ -6218,6 +6484,8 @@ void main() {
                         currentRobotState = operation;
                     } else if (keyValue == '2'){
                         currentRobotState = selectLog;
+                    } else if (keyValue == 'A'){
+                        sendArduinoStandbyClampRequest();
                     }
                     break;
                 case operation:
@@ -6237,7 +6505,7 @@ void main() {
                     } else if (keyValue == '3'){
                         currentLogState = three;
                     } else if (keyValue == '4'){
-                        currentLogState = '4';
+                        currentLogState = four;
                     } else {
                         break;
                     }
@@ -6250,12 +6518,12 @@ void main() {
 
 
         }
-# 1181 "main.c"
+# 1515 "main.c"
         tick++;
         _delay((unsigned long)((1)*(10000000/4000.0)));
     }
 }
-# 1194 "main.c"
+# 1528 "main.c"
 void __attribute__((picinterrupt(("")))) interruptHandler(void){
 
     if(INT1IF){
@@ -6281,22 +6549,48 @@ void __attribute__((picinterrupt(("")))) interruptHandler(void){
 
 }
 
+
+
 void mainEEPROM(void){
     robotInit();
-        { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+    { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
     { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
-    char save_me = 'x';
+
+
+
+
+    int bigNum = 32001;
+    unsigned char a = (char)((bigNum >> 8) & 0xFF);
+    unsigned char b = (char)(bigNum & 0xFF);
+
     char from_eeprom;
 
 
-     robotInit();
-    printf("EEPROM-Demon");
-    ee_read_byte(0x00, &from_eeprom);
-    printf("read: %cn", from_eeprom);
+    robotInit();
 
-    ee_write_byte(0x00, &save_me);
-    printf("wrote: %cn", save_me);
+    ee_write_byte(0x00, &a);
+    printf("wrote: %c", a);
+    { lcdInst(0x80 | LCD_LINE2_ADDR);};
 
-    ee_read_byte(0x00, &from_eeprom);
-    printf("read: %cnn", from_eeprom);
+    ee_write_byte(0x01, &b);
+    printf("wrote: %c", b);
+    { lcdInst(0x80 | LCD_LINE3_ADDR);};
+
+    ee_read_byte(0x00, &a);
+    printf("read: %c", a);
+    { lcdInst(0x80 | LCD_LINE4_ADDR);};
+
+    ee_read_byte(0x01, &b);
+    printf("read: %c", b);
+
+    _delay((unsigned long)((5000)*(10000000/4000.0)));
+
+    int bigNum2 = a;
+    bigNum2 = (bigNum2 << 8) | b ;
+
+    { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+    { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
+    printf("%d",bigNum2);
+    _delay((unsigned long)((5000)*(10000000/4000.0)));
+
 }

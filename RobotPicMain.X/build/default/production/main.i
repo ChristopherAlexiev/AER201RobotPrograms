@@ -7,7 +7,7 @@
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\language_support.h" 1 3
 # 2 "<built-in>" 2
 # 1 "main.c" 2
-# 12 "main.c"
+# 11 "main.c"
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 1 3
 # 18 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 3
 extern const char __xc8_OPTIM_SPEED;
@@ -4380,7 +4380,7 @@ extern __attribute__((nonreentrant)) void _delaywdt(unsigned long);
 #pragma intrinsic(_delay3)
 extern __attribute__((nonreentrant)) void _delay3(unsigned char);
 # 32 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\xc.h" 2 3
-# 12 "main.c" 2
+# 11 "main.c" 2
 
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 1 3
 # 10 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\math.h" 3
@@ -4944,7 +4944,7 @@ double jn(int, double);
 double y0(double);
 double y1(double);
 double yn(int, double);
-# 13 "main.c" 2
+# 12 "main.c" 2
 
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdio.h" 1 3
 # 24 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdio.h" 3
@@ -5082,10 +5082,10 @@ char *ctermid(char *);
 
 
 char *tempnam(const char *, const char *);
-# 14 "main.c" 2
+# 13 "main.c" 2
 
 # 1 "C:\\Program Files (x86)\\Microchip\\xc8\\v2.05\\pic\\include\\c99\\stdbool.h" 1 3
-# 15 "main.c" 2
+# 14 "main.c" 2
 
 
 # 1 "./configBits.h" 1
@@ -5143,7 +5143,7 @@ char *tempnam(const char *, const char *);
 
 
 #pragma config EBTRB = OFF
-# 17 "main.c" 2
+# 16 "main.c" 2
 
 # 1 "./lcd.h" 1
 # 68 "./lcd.h"
@@ -5189,7 +5189,7 @@ void lcd_shift_cursor(unsigned char numChars, lcd_direction_e direction);
 void lcd_shift_display(unsigned char numChars, lcd_direction_e direction);
 # 118 "./lcd.h"
 void putch(char data);
-# 18 "main.c" 2
+# 17 "main.c" 2
 
 # 1 "./I2C.h" 1
 # 38 "./I2C.h"
@@ -5217,7 +5217,7 @@ void I2C_Master_Stop(void);
 void I2C_Master_Write(unsigned byteToWrite);
 # 68 "./I2C.h"
 unsigned char I2C_Master_Read(unsigned char ackBit);
-# 19 "main.c" 2
+# 18 "main.c" 2
 
 
 
@@ -5229,6 +5229,8 @@ int logs[5][48];
 const char keys[] = "123A456B789C*0#D";
 
 
+
+const int clicksPerM = 1770;
 
 
 volatile _Bool keyPressed = 0;
@@ -5268,11 +5270,12 @@ void doDisplayLog(int logNumber){
                 break;
             case pole:
                 { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
-                printf("%s%d%s%d", "POLE ", currentPole,"/", logs[logNumber][2]);
+                printf("%s%d%s%d", "POLE ", currentPole,"/", 1);
                 { lcdInst(0x80 | LCD_LINE2_ADDR);};
-                printf("%s%d","TIR. DEPLOY: ", logs[logNumber][3+(currentPole-1)*2]);
+                printf("%s%d","DEPL: ", logs[logNumber][3+(currentPole-1)*3]);
+                printf("%s%d"," CM: ", logs[logNumber][5+(currentPole-1)*3]);
                 { lcdInst(0x80 | LCD_LINE3_ADDR);};
-                printf("%s%d","TIRE. ON POLE: ", logs[logNumber][4+(currentPole-1)*2]);
+                printf("%s%d","ON POLE: ", logs[logNumber][4+(currentPole-1)*3]);
                 { lcdInst(0x80 | LCD_LINE4_ADDR);};
                 printf("%s","1<- 2-> 3MENU");
                 break;
@@ -5406,10 +5409,11 @@ void EncoderInit(){
 
   INT0IE = 1;
 }
-# 215 "main.c"
+# 217 "main.c"
 void CLK_INIT( void ){
     OSCCONbits.IRCF = 0b100;
 }
+
 
 
 void TIMER_INIT( void ){
@@ -5445,7 +5449,6 @@ void initSecondTimer(){
     TMR0L = 0xBE;
     TMR0IE = 1;
     TMR0ON = 1;
-
     return;
 }
 
@@ -5455,7 +5458,168 @@ void stopTimer(){
 }
 
 
+void ee_write_byte(unsigned char address, unsigned char *_data){
 
+    EEDATA = *_data;
+    EEADR = address;
+
+    EECON1bits.EEPGD = 0;
+    EECON1bits.CFGS = 0;
+    EECON1bits.WREN = 1;
+    INTCONbits.GIE = 0;
+    EECON2 = 0x55;
+    EECON2 = 0x0AA;
+    EECON1bits.WR = 1;
+    do {
+        __asm(" clrwdt");
+        } while(EECON1bits.WR);
+    EECON1bits.WREN=0;
+
+}
+
+void ee_read_byte(unsigned char address, unsigned char *_data){
+    EEADR = address;
+    EECON1bits.CFGS = 0;
+    EECON1bits.EEPGD = 0;
+    EECON1bits.RD = 1;
+    *_data = EEDATA;
+}
+
+
+
+
+
+
+void saveLogsOld(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+
+    unsigned char x = 0x00;
+    for (int i = 0 ; i < 5; i++){
+        for (int j = 1; j < 48; j++){
+            bigNum = logs[i][j];
+            if (j == 0 || (j != 1 && j != 2 && j != 3 && j !=4 && j-5 >= 0&&(j-5)%3 == 0)){
+
+                a = ((bigNum >> 8) & 0xFF);
+                b = (bigNum & 0xFF);
+                ee_write_byte(x, &a);
+                x++;
+                ee_write_byte(x, &b);
+                x++;
+            } else {
+                a = (bigNum & 0xFF);
+                ee_write_byte(x, &a);
+                x++;
+            }
+        }
+    }
+
+
+
+    return;
+}
+void saveLogs(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+
+    unsigned char x = 0x00;
+    for (int i = 1 ; i < 5; i++){
+        for (int j = 0; j < 48; j++){
+            bigNum = logs[i][j];
+            if ( j >= 5 && (j-5)%3 == 0){
+
+                a = (unsigned char)((bigNum >> 8) & 0xFF);
+                b = (unsigned char)(bigNum & 0xFF);
+
+
+                ee_write_byte(x, &a);
+                ee_write_byte(x+1, &b);
+                x+=2;
+            } else {
+                a = (unsigned char)(bigNum & 0xFF);
+                ee_write_byte(x, &a);
+                x++;
+
+            }
+
+
+
+
+        }
+    }
+
+
+
+    return;
+}
+
+
+
+void readLogsOld(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+
+    unsigned char x = 0x00;
+    for (int i = 0 ; i < 5; i++){
+        for (int j = 1; j < 48; j++){
+            if (j == 0 || (j != 1 && j != 2 && j != 3 && j !=4 && j-5 >= 0 &&(j-5)%3 == 0)){
+            ee_read_byte(x, &a);
+            x++;
+            ee_read_byte(x, &b);
+            x++;
+            bigNum = a;
+            bigNum = (bigNum << 8) | b ;
+            } else {
+            ee_read_byte(x, &a);
+            x++;
+            bigNum = a;
+            }
+            logs[i][j] = bigNum;
+        }
+    }
+
+
+
+    return;
+}
+
+void readLogs(){
+
+    int bigNum;
+    unsigned char a;
+    unsigned char b;
+
+    unsigned char x = 0x00;
+    for (int i = 1 ; i < 5; i++){
+        for (int j = 0; j < 48; j++){
+            if ( j >= 5 && (j-5)%3 == 0){
+                ee_read_byte(x, &a);
+                ee_read_byte(x+1, &b);
+                x+=2;
+                bigNum = a;
+                bigNum = (bigNum << 8) | b ;
+            } else {
+                ee_read_byte(x, &a);
+                x++;
+                bigNum = a;
+            }
+
+
+
+
+            logs[i][j] = bigNum;
+        }
+    }
+
+
+    return;
+}
 
 
 
@@ -5510,13 +5674,8 @@ void set_pwm_duty_cycle(float dutyA, float dutyB){
 
         unsigned short max_duty_val = PR2 + 1;
 
-
-
-
-
         unsigned short duty_valA = (unsigned short)((dutyA *4 / 100.0) * (float)max_duty_val);
         unsigned short duty_valB = (unsigned short)((dutyB *4/ 100.0) * (float)max_duty_val);
-
 
 
         CCP1X = duty_valA & 2;
@@ -5524,10 +5683,13 @@ void set_pwm_duty_cycle(float dutyA, float dutyB){
         CCPR1L = duty_valA >> 2;
 
 
-
         CCP2X = duty_valB & 2;
         CCP2Y = duty_valB & 1;
         CCPR2L = duty_valB >> 2;
+
+
+
+
 
     }
 }
@@ -5589,7 +5751,7 @@ int tirePositioning(unsigned long maxOperationTime){
         topPreviousState = topBreakbeam;
         bottomPreviousState = bottomBreakbeam;
     }
-# 408 "main.c"
+# 569 "main.c"
     if (distanceRecordedTop < 80){
         setMotorSpeeds(0, 1, 1, 0);
         opDelay(100, maxOperationTime);
@@ -5597,8 +5759,22 @@ int tirePositioning(unsigned long maxOperationTime){
             setMotorSpeeds(90, 0, 0, 90);
         }
         setMotorSpeeds(0, 1, 1, 0);
+    } else {
+
+
+        setMotorSpeeds(0, 1, 1, 0);
+        opDelay(100, maxOperationTime);
+        while(millisecondsMeasured < maxOperationTime && PORTBbits.RB4 == 1){
+            setMotorSpeeds(90, 0, 0, 90);
+        }
+        long startDistance = motorADistance;
+        while(millisecondsMeasured < maxOperationTime && abs(startDistance - motorADistance) < distanceRecordedBottom/2){
+            setMotorSpeeds(90, 0, 0, 90);
+        }
+        setMotorSpeeds(0, 1, 1, 0);
     }
-# 431 "main.c"
+
+
     if (distanceRecordedTop < 80 && distanceRecordedBottom < 80){
         return 0;
     } else if (distanceRecordedTop > 80 && distanceRecordedBottom > 80){
@@ -5618,12 +5794,11 @@ void sendArduinoTireDropRequest(){
 
 
     unsigned char data = '1';
-
     I2C_Master_Start();
     I2C_Master_Write(0b00010000);
     I2C_Master_Write(data);
     I2C_Master_Stop();
-# 500 "main.c"
+# 657 "main.c"
     return;
 }
 
@@ -5645,9 +5820,7 @@ void sendArduinoTireOperationStartMessage(){
 
 
 
-
     unsigned char data = '2';
-
     I2C_Master_Start();
     I2C_Master_Write(0b00010000);
     I2C_Master_Write(data);
@@ -5669,7 +5842,7 @@ void sendArduinoLogs(){
 
 
             I2C_Master_Stop();
-# 557 "main.c"
+# 711 "main.c"
     return;
 }
 
@@ -5698,7 +5871,7 @@ _Bool requestIsTireDropDone(){
     }
     return 0;
 }
-# 602 "main.c"
+# 754 "main.c"
 void PIDCorrectedMove(int goalSpeed, float turnRatio, long motorAStartDistance, long motorBStartDistance, float kp, float kd, float ki, long * derivativeData){
     long error = (long)((motorADistance - motorAStartDistance)-(motorBDistance - motorBStartDistance)/(double)turnRatio);
     long derivative = error - derivativeData[0];
@@ -5787,8 +5960,6 @@ void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionCons
     long motorAStartDistance = motorADistance;
     long motorBStartDistance = motorBDistance;
 
-
-
     while (millisecondsMeasured < maxOperationTime && abs(motorADistance - motorAStartDistance) < distanceDegrees){
         errorCorrectedMove(goalSpeed, turnRatio, motorAStartDistance, motorBStartDistance, correctionConstant);
     }
@@ -5797,7 +5968,8 @@ void opErrorCorrectionDegrees(int goalSpeed, int turnRatio, float correctionCons
 
 
 void doOperation(){
-
+            LATAbits.LATA5 = 0;
+        LATBbits.LATB3 = 0;
 
 
 
@@ -5807,12 +5979,13 @@ void doOperation(){
     I2C_Master_Write(0b00010000);
     I2C_Master_Stop();
 
+
     sendArduinoTireOperationStartMessage();
 
 
 
     TIMER_INIT();
-    millisecondsMeasured = 30000ul;
+    millisecondsMeasured = 0ul;
 
  int goalSpeed = 30;
  int motorASpeed = 30;
@@ -5820,14 +5993,14 @@ void doOperation(){
  int errorScaleFactor = 1;
  int error = 0;
  int currentAngle = 0;
- enum operationStates {moveForward, poleFinding, tireDrop, courseAdjustment, returnHome, complete, leavePole};
+ enum operationStates {moveForward, poleFinding, tireDrop, noTireDrop, courseAdjustment, returnHome, complete, leavePole};
  enum operationStates currentOperationState = moveForward;
  int leftRangeFinder = 0;
  int rightRangeFinder = 0;
  int tiresToDrop = 0;
     int minimumSafeDistanceToPole;
     int fourMetreEquivalent;
-    unsigned long timeInOperation = 180000ul;
+    unsigned long timeInOperation = 10000ul;
     long motorAStartDistance = motorADistance;
     long motorBStartDistance = motorBDistance;
     unsigned long motorStartTime = millisecondsMeasured;
@@ -5854,6 +6027,8 @@ void doOperation(){
 
     long distanceToPole = 0ll;
     long distanceFromLastPole = 0ll;
+    int distanceToPoleCM = 0;
+    int distanceFromLastPoleCM = 0;
 
 
 
@@ -5911,23 +6086,30 @@ void doOperation(){
                 { lcdInst(0x80 | LCD_LINE4_ADDR);};
                 printf("A: %d", motorADistance);
                 }
-# 833 "main.c"
-                errorCorrectedMove(90, 1, motorAStartDistance, motorBStartDistance, 0.4);
-
-                if(motorADistance - motorAStartDistance > 30000){
+# 986 "main.c"
+                errorCorrectedMove(90, 1, motorAStartDistance, motorBStartDistance, 1.2);
+# 996 "main.c"
+                if(motorADistance > 4*clicksPerM){
                     currentOperationState = complete;
                 }
 
                 break;
             case poleFinding:
 
-                distanceFromLastPole = motorADistance - distanceToPole;
-                distanceToPole = motorADistance;
+
+
 
                 poleNumber++;
 
 
                 tiresOnPole = tirePositioning(timeInOperation);
+# 1021 "main.c"
+                distanceFromLastPole = motorADistance - distanceToPole;
+                distanceToPole = motorADistance;
+
+                distanceFromLastPoleCM = (int)((double)distanceFromLastPole/clicksPerM*100);
+                distanceToPoleCM = (int)((double)distanceToPole/clicksPerM*100);
+
     { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
                 { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
                 printf("TIRE DROP");
@@ -5935,39 +6117,109 @@ void doOperation(){
                 printf("%d on pole", tiresOnPole);
 
                 setMotorSpeeds(0, 1, 1, 0);
-# 864 "main.c"
-    sendArduinoTireDropRequest();
 
 
-                tiresToDrop = 1;
-                currentOperationState = tireDrop;
+
+
+
+                if (tiresOnPole == 2){
+                    tiresToDrop = 0;
+                } else if (poleNumber == 1){
+                    if (tiresOnPole == 1){
+                        tiresToDrop = 1;
+                    } else {
+                        tiresToDrop = 2;
+                    }
+                } else {
+                    if (distanceFromLastPole < 0.3*clicksPerM){
+                        if (tiresOnPole == 1){
+                            tiresToDrop = 0;
+                        } else {
+                            tiresToDrop = 1;
+                        }
+                    } else {
+                        if (tiresOnPole == 1){
+                            tiresToDrop = 1;
+                        } else {
+                            tiresToDrop = 2;
+                        }
+                    }
+
+                }
+                { lcdInst(0x80 | LCD_LINE3_ADDR);};
+                printf("%d dropping", tiresToDrop);
+                { lcdInst(0x80 | LCD_LINE4_ADDR);};
+
+                printf("%d cm from pole", distanceFromLastPoleCM );
+
+
+
+    if (tiresToDrop > 0){
+                    sendArduinoTireDropRequest();
+                    currentOperationState = tireDrop;
+                } else {
+                    currentOperationState = noTireDrop;
+                }
+
+
+
+
 
 
 
     break;
    case tireDrop:
 
-    isDoneDrop = requestIsTireDropDone();
 
-    if (isDoneDrop){
-     tiresToDrop -- ;
-                    tiresDeployedOnPole++;
-     if (tiresToDrop == 0){
-      currentOperationState = leavePole;
 
-                        tiresOnPole = 0;
-                        totalTiresSupplied += tiresDeployedOnPole;
-                        tiresDeployedOnPole = 0;
-     } else {
+                    isDoneDrop = requestIsTireDropDone();
 
-      sendArduinoTireDropRequest();
-     }
-    }
+                    if (isDoneDrop){
+                        tiresToDrop -- ;
+                        tiresDeployedOnPole++;
+                        if (tiresToDrop == 0){
+                           currentOperationState = leavePole;
+
+                            totalTiresSupplied += tiresDeployedOnPole;
+
+
+
+
+                            logs[0][1] = totalTiresSupplied;
+                            logs[0][2] = poleNumber;
+                            logs[0][3+(poleNumber-1)*3] = tiresDeployedOnPole;
+                            logs[0][4+(poleNumber-1)*3] = tiresDeployedOnPole + tiresOnPole;
+                            logs[0][5+(poleNumber-1)*3] = distanceToPoleCM;
+
+                            tiresOnPole = 0;
+                            tiresDeployedOnPole = 0;
+
+                        } else {
+
+                            sendArduinoTireDropRequest();
+                        }
+                    }
 
 
 
     break;
-   case courseAdjustment:
+   case noTireDrop:
+                opDelay(4000, timeInOperation);
+                    tiresDeployedOnPole = 0;
+                    tiresOnPoleAfterOp = tiresOnPole;
+
+                    logs[0][1] = totalTiresSupplied;
+                    logs[0][2] = poleNumber;
+                    logs[0][3+(poleNumber-1)*3] = tiresDeployedOnPole;
+                    logs[0][4+(poleNumber-1)*3] = tiresDeployedOnPole + tiresOnPole;
+                    logs[0][5+(poleNumber-1)*3] = distanceToPoleCM;
+
+
+                    tiresOnPole = 0;
+                    tiresOnPoleAfterOp = 0;
+                    currentOperationState = leavePole;
+                break;
+            case courseAdjustment:
 
                 currentOperationState = moveForward;
     break;
@@ -6009,26 +6261,22 @@ void doOperation(){
 
 
                 sendArduinoAbortOperationMessage();
-                for (int i = 0; i < 48; i++){
-                    logs[0][i] = 3;
-                }
 
+
+                logs[0][0] = (int)(millisecondsMeasured/1000);
+# 1190 "main.c"
                 LATAbits.LATA4 = 0;
     return;
                 break;
         }
-# 960 "main.c"
+# 1209 "main.c"
   if (millisecondsMeasured >= timeInOperation){
    currentOperationState = complete;
 
   }
   switch (currentOperationState){
             case moveForward:
-
-
-
-
-
+# 1223 "main.c"
                 if (topLaserStatePrev != topLaserState || bottomLaserStatePrev != bottomLaserState){
                     if (topLaserStatePrev != topLaserState){
                         badCount++;
@@ -6067,35 +6315,7 @@ void doOperation(){
 
 
 #pragma stack 0x300 0xff
-
-
-void ee_write_byte(unsigned char address, unsigned char *_data){
-
-    EEDATA = *_data;
-    EEADR = address;
-
-    EECON1bits.EEPGD = 0;
-    EECON1bits.CFGS = 0;
-    EECON1bits.WREN = 1;
-    INTCONbits.GIE = 0;
-    EECON2 = 0x55;
-    EECON2 = 0x0AA;
-    EECON1bits.WR = 1;
-    do {
-        __asm(" clrwdt");
-        } while(EECON1bits.WR);
-    EECON1bits.WREN=0;
-
-}
-
-void ee_read_byte(unsigned char address, unsigned char *_data){
-    EEADR = address;
-    EECON1bits.CFGS = 0;
-    EECON1bits.EEPGD = 0;
-    EECON1bits.RD = 1;
-    *_data = EEDATA;
-}
-# 1058 "main.c"
+# 1283 "main.c"
 const char happynewyear[7] = {
     00,
     55,
@@ -6139,6 +6359,10 @@ void robotInit(void){
     TRISBbits.TRISB7 = 1;
 
 
+    TRISBbits.TRISB3 = 0;
+    TRISAbits.TRISA5 = 0;
+
+
     TRISAbits.TRISA4 = 0;
     LATAbits.LATA4 = 0;
 
@@ -6169,14 +6393,36 @@ void robotInit(void){
 
 void replaceOldLog(){
     for (int i = 0; i< 48; i++){
+        logs[1][i] = logs[2][i];
+    }
+
+
+    for (int i = 0; i< 48; i++){
+        logs[2][i] = logs[3][i];
+    }
+
+    for (int i = 0; i< 48; i++){
+        logs[3][i] = logs[4][i];
+    }
+
+    for (int i = 0; i< 48; i++){
         logs[4][i] = logs[0][i];
     }
+    saveLogs();
+    robotInit();
     return;
 }
 
 void main() {
-    robotInit();
 
+
+    robotInit();
+    { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+    { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
+# 1403 "main.c"
+    readLogs();
+# 1416 "main.c"
+    robotInit();
 
     unsigned char time[7];
 
@@ -6189,10 +6435,15 @@ void main() {
     enum logStates {justRan,one,two,three,four};
     enum logStates currentLogState = one;
 
+
+
     unsigned long tick = 0ul;
 
 
     while(1){
+        LATAbits.LATA5 = 0;
+        LATBbits.LATB3 = 1;
+
             if (tick%10ul==0){
 
                 I2C_Master_Start();
@@ -6240,6 +6491,7 @@ void main() {
                 doOperation();
                 { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
                 currentRobotState = operationComplete;
+
 
                 break;
             case operationComplete:
@@ -6312,7 +6564,7 @@ void main() {
                     } else if (keyValue == '3'){
                         currentLogState = three;
                     } else if (keyValue == '4'){
-                        currentLogState = '4';
+                        currentLogState = four;
                     } else {
                         break;
                     }
@@ -6325,12 +6577,12 @@ void main() {
 
 
         }
-# 1295 "main.c"
+# 1579 "main.c"
         tick++;
         _delay((unsigned long)((1)*(10000000/4000.0)));
     }
 }
-# 1308 "main.c"
+# 1592 "main.c"
 void __attribute__((picinterrupt(("")))) interruptHandler(void){
 
     if(INT1IF){
@@ -6355,6 +6607,8 @@ void __attribute__((picinterrupt(("")))) interruptHandler(void){
 
 
 }
+
+
 
 void mainEEPROM(void){
     robotInit();
@@ -6398,4 +6652,82 @@ void mainEEPROM(void){
     printf("%d",bigNum2);
     _delay((unsigned long)((5000)*(10000000/4000.0)));
 
+}
+
+
+void mainEEPROMTest(void){
+    robotInit();
+
+
+
+
+
+    int bigNum [2][5] = {{0,1,2,3,32001},{5,6,7,8,9}};
+    int bigNum2 [2][5];
+    unsigned char currentIndex = 0x00;
+    unsigned char a;
+    unsigned char b;
+
+    for (int i = 0; i<2; i++){
+        for (int j = 0; j< 5; j++){
+
+
+            if(i == 0 && j == 4){
+                a = (unsigned char)((bigNum[i][j] >> 8) & 0xFF);
+                b = (unsigned char)(bigNum[i][j] & 0xFF);
+
+                robotInit();
+
+                ee_write_byte(currentIndex, &a);
+
+
+                ee_write_byte(currentIndex + 1, &b);
+
+                currentIndex += 2;
+            }else {
+                a = (unsigned char) (bigNum[i][j] & 0xFF);
+                ee_write_byte(currentIndex, &a);
+                currentIndex++;
+            }
+
+            _delay((unsigned long)((20)*(10000000/4000.0)));
+        }
+    }
+
+    currentIndex = 0;
+    for (int i = 0; i<2; i++){
+        for (int j = 0; j< 5; j++){
+            if(i == 0 && j == 4){
+                ee_read_byte(currentIndex, &a);
+
+                ee_read_byte(currentIndex + 1, &b);
+
+                currentIndex += 2;
+
+                bigNum2[i][j] = a;
+                bigNum2[i][j] = (bigNum2[i][j] << 8) | b ;
+            } else {
+                ee_read_byte(currentIndex, &a);
+                currentIndex++;
+                bigNum2[i][j] = a;
+            }
+
+
+            _delay((unsigned long)((20)*(10000000/4000.0)));
+        }
+    }
+
+    { lcdInst(0x01); _delay((unsigned long)((5)*(10000000/4000.0)));};
+    { lcdInst(0x80); _delay((unsigned long)((2)*(10000000/4000.0)));};
+    for (int i = 0; i<2; i++){
+        for (int j = 0; j< 5; j++){
+            printf("%s", " ");
+            printf("%d",bigNum2[i][j]);
+            _delay((unsigned long)((20)*(10000000/4000.0)));
+        }
+        { lcdInst(0x80 | LCD_LINE2_ADDR);};
+    }
+
+
+    _delay((unsigned long)((10000)*(10000000/4000.0)));
 }

@@ -47,19 +47,19 @@ const int rotatorUpValueTwo = 100;//maximum value for tire rotator servo
 const int rotatorDownValueTwo = 10;//minimum value for tire rotator servo 
 const int clampCloseValue = 0;
 const int clampOpenValue = 100;
-const int craneStopSpeed = 94;
+const int craneStopSpeed = 93;
 const int linearStopSpeed = 95;
 const unsigned long opDelayAmount = 20;
 const int ITwoCAddress = 8;
-const int stepsPerTire = 600;
+const int stepsPerTire = 700;
 const int stepsPerRevolution = 200;
 const int stepSpeed = 50;
 
 //note that these aren't the only speeds used; there are some magic numbers particularly for the ultrasonic sensor
-const int craneFastPort = 10;
-const int craneMediumPort = 40;
-const int craneFastStarboard = 170;
-const int craneMediumStarboard = 145;
+const int craneFastPort = 35;
+const int craneMediumPort = 60;
+const int craneFastStarboard = 145;
+const int craneMediumStarboard = 130;
 const int craneSlowStarboard = 110;
 const int craneSlowPort = 75;
 
@@ -72,7 +72,7 @@ const long int maxGroundHeight = 28ll;
 
 
 //moving ultrasonic avg
-const int lengthAvg = 30; // note this used to be int const
+const int lengthAvg = 20; // note this used to be int const
 long movingAvgArr[lengthAvg];
 long movingAvgSum = 0;
 int currentAvgArrayIndex = 0;
@@ -194,7 +194,7 @@ void lowerFlapperTwo(){//time in ms
     for (int pos = rotatorUpValueTwo; pos > rotatorDownValueTwo; pos -= 1) { // goes from 0 degrees to 180 degrees
       // in steps of 1 degree
       rotatorTwo.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(25);                       // waits 15ms for the servo to reach the position
+      delay(35);                       // waits 15ms for the servo to reach the position
       if (!doOp){
         break;
       }
@@ -235,7 +235,7 @@ void lowerFlapperOne(){//time in ms
     for (int pos = rotatorUpValueOne; pos < rotatorDownValueOne; pos += 1) { // goes from 0 degrees to 180 degrees
       // in steps of 1 degree
       rotatorOne.write(pos);              // tell servo to go to position in variable 'pos'
-      delay(25);                       // waits 15ms for the servo to reach the position
+      delay(35);                       // waits 15ms for the servo to reach the position
       if(!doOp){
         break;
       }
@@ -373,16 +373,7 @@ int clampLocNeeded = 0;
 
 
 void loop(){
-  /*
-  Serial.println("STEPPY");
-          steppy.setSpeed(100);
-          steppy.step(200);
-          //steppy.step(-stepsPerTire);
-          for (int i = 0; i<10; i++){
-            //steppy.step(200);
-            //opDelay(10);
-          }
-          steppy.setSpeed(0);*/
+  
   
   initMovingAvg();
   
@@ -447,8 +438,8 @@ void loop(){
       //rotatorTwo.write(rotatorUpValueTwo);//raise flapper non-blocking
       //rotatorOne.write(rotatorUpValueOne);
       //cranePusherServo.write(180);
-      //standbyModeInterruptUltrasonicTest();
-      standbyModeInterrupt();
+      standbyModeInterruptUltrasonicTest();
+      //standbyModeInterrupt();
     }
 
   }
@@ -800,15 +791,20 @@ void resetClampPartTwo(){
     closeClamp(); //close the clamp 
     //move in the other direction away from the flapper all the way to the starboard-most ebump
     cranePusherServo.write(craneFastStarboard);
+    Serial.println("ONE");
     while (digitalRead(ebumpOnePin) == LOW && doOp);
-
+    Serial.println("TWO");
     while(digitalRead(ebumpOnePin) == HIGH && doOp){//traverse the ebump to the starboard side
       opDelay(opDelayAmount);
     }
+    Serial.println("THREE");
     clampLoc = 0;// set the current location of the clamp
     cranePusherServo.write(craneStopSpeed);
     //rotatorTwo.write(rotatorUpValueTwo);
     raiseFlapperTwo();
+
+    Serial.println("FOUR");
+
   } else {//if the current flapper is 1 or two 
     lowerFlapperOne(); //lower the flapper corresponding to the current flapper case
     //linearServo.write(180);//close the clamp
